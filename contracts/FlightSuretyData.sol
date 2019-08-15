@@ -12,8 +12,15 @@ contract FlightSuretyData {
     address private contractOwner;                                      // Account used to deploy contract
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
     uint constant M = 4;                                                // Multi-party concensus number
+    struct Airline {
+        string id;
+        bool isRegistered;
+        bool isEligible;
+        address wallet;
+    }
     address[] multiCalls = new address[](0);
     mapping(address => bool) authorizedContracts;
+    mapping(string => Airline) airlines;
 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
@@ -56,7 +63,10 @@ contract FlightSuretyData {
         _;
     }
 
-    modifier isCallerAuthorized()
+    /**
+    * @dev Modifier that requires the msg.sender is into "authorizedContracts"
+    */
+    modifier requireIsCallerAuthorized()
     {
         require(authorizedContracts[msg.sender] == true, "Caller is not authorized");
         _;
@@ -89,7 +99,7 @@ contract FlightSuretyData {
         //require(userProfiles[msg.sender].isAdmin, "Caller is not an admin");
 
         bool isDuplicate = false;
-        for(uint c=0; c<multiCalls.length; c++) {
+        for(uint c=0; c<multiCalls.length; c++){
             if (multiCalls[c] == msg.sender) {
                 isDuplicate = true;
                 break;
@@ -99,8 +109,8 @@ contract FlightSuretyData {
 
         multiCalls.push(msg.sender);
         if (multiCalls.length >= M) {
-            operational = mode;      
-            multiCalls = new address[](0);      
+            operational = mode;
+            multiCalls = new address[](0);
         }
     }
 
@@ -119,10 +129,13 @@ contract FlightSuretyData {
    /**
     * @dev Add an airline to the registration queue
     *      Can only be called from FlightSuretyApp contract
-    *
+    * 
+    * @dev Airlines just get eligible when they pay the tax
     */   
-    function registerAirline() external pure
+    function registerAirline(string _id, address _wallet) external view
     {
+        require(!airlines[_id].isRegistered,"Airline is already registrated.");
+        airlines[_id] = Airline({id: _id, isRegistered: true, isEligible: false, wallet: _wallet});
     }
 
 
