@@ -13,6 +13,7 @@ contract FlightSuretyData {
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
     uint constant M = 4;                                                // Multi-party concensus number
     address[] multiCalls = new address[](0);
+    mapping(address => bool) authorizedContracts;
 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
@@ -52,6 +53,12 @@ contract FlightSuretyData {
     modifier requireContractOwner()
     {
         require(msg.sender == contractOwner, "Caller is not contract owner");
+        _;
+    }
+
+    modifier isCallerAuthorized()
+    {
+        require(authorizedContracts[msg.sender] == true, "Caller is not authorized");
         _;
     }
 
@@ -95,6 +102,14 @@ contract FlightSuretyData {
             operational = mode;      
             multiCalls = new address[](0);      
         }
+    }
+
+    function authorizedContract(address appAdress) external {
+        authorizedContracts[appAdress] = true;
+    }
+
+    function deuthorizedContract(address appAdress) external {
+        delete authorizedContracts[appAdress];
     }
 
     /********************************************************************************************/
