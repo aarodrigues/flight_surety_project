@@ -12,28 +12,37 @@ contract FlightSuretyData {
     address private contractOwner;                                      // Account used to deploy contract
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
     uint constant M = 4;                                                // Multi-party concensus number
+    uint threshold = 4;
     struct Airline {
-        string id;
         bool isRegistered;
-        bool isEligible;
-        address wallet;
+        bool isFounded;
+        address account;
     }
     address[] multiCalls = new address[](0);
     mapping(address => bool) authorizedContracts;
-    mapping(string => Airline) airlines;
+    mapping(address => Airline) airlines;
+    address[] airlinesAddrs = new address[](0);
+    uint approvedVotesNumber = 0;
 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
 
+     event RegisterAirline(address account);
 
     /**
     * @dev Constructor
     *      The deploying account becomes contractOwner
     */
-    constructor () public 
+    constructor () public
     {
         contractOwner = msg.sender;
+        airlines[contractOwner] = Airline({
+            isRegistered: true,
+            isFounded: false,
+            account: contractOwner
+        });
+        emit RegisterAirline(contractOwner);
     }
 
     /********************************************************************************************/
@@ -48,7 +57,7 @@ contract FlightSuretyData {
     *      This is used on all state changing functions to pause the contract in 
     *      the event there is an issue that needs to be fixed
     */
-    modifier requireIsOperational() 
+    modifier requireIsOperational()
     {
         require(operational, "Contract is currently not operational");
         _;  // All modifiers require an "_" which indicates where the function body will be added
@@ -69,6 +78,24 @@ contract FlightSuretyData {
     modifier requireIsCallerAuthorized()
     {
         require(authorizedContracts[msg.sender] == true, "Caller is not authorized");
+        _;
+    }
+
+    /**
+    * @dev Modifier that requires consensus to aprove new airlines
+    */
+    modifier requireIsConsensus(bool vote)
+    {
+        require(approveAirlineRegistration(vote), "Register wasn't aproved");
+        _;
+    }
+
+    /**
+    * @dev Modifier that requires the msg.sender is into "authorizedContracts"
+    */
+    modifier requireIsRegistered(address _address)
+    {
+        require(!airlines[_address].isRegistered,"Airline is already registrated.");
         _;
     }
 
@@ -114,11 +141,31 @@ contract FlightSuretyData {
         }
     }
 
-    function authorizedContract(address appAdress) external {
+    function approveAirlineRegistration(bool vote) internal returns(bool){
+        bool isDuplicate = false;
+        for(uint i = 0; i < airlinesAddrs.length; i++){
+            if (airlinesAddrs[i] == msg.sender) {
+                isDuplicate = true;
+                break;
+            }
+        }
+        require(!isDuplicate, "Airline was already registered.");
+
+        airlinesAddrs.push(msg.sender);
+        if(vote)
+            approvedVotesNumber = approvedVotesNumber.add(1);
+        if (airlinesAddrs.length >= threshold) {
+            if(approvedVotesNumber < airlinesAddrs.length.div(2))
+                return false;
+        }
+        return true;
+    }
+
+    function authorizedContract(address appAdress) external requireIsCallerAuthorized {
         authorizedContracts[appAdress] = true;
     }
 
-    function deuthorizedContract(address appAdress) external {
+    function deuthorizedContract(address appAdress) external requireIsCallerAuthorized {
         delete authorizedContracts[appAdress];
     }
 
@@ -129,20 +176,24 @@ contract FlightSuretyData {
    /**
     * @dev Add an airline to the registration queue
     *      Can only be called from FlightSuretyApp contract
-    * 
+    *
     * @dev Airlines just get eligible when they pay the tax
-    */   
-    function registerAirline(string _id, address _wallet) external view
+    */
+    function registerAirline(address _address, bool _aproved) external requireIsOperational
+     requireIsRegistered(_address) requireIsConsensus(_aproved)
     {
-        require(!airlines[_id].isRegistered,"Airline is already registrated.");
-        airlines[_id] = Airline({id: _id, isRegistered: true, isEligible: false, wallet: _wallet});
+        airlines[_address] = Airline({
+            isRegistered: true,
+            isFounded: false,
+            account: _address
+        });
     }
 
 
    /**
     * @dev Buy insurance for a flight
     *
-    */   
+    */
     function buy() external payable
     {
 
