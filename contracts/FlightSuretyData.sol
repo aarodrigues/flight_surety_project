@@ -13,9 +13,10 @@ contract FlightSuretyData {
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
     uint constant M = 4;                                                // Multi-party concensus number
     uint threshold = 4;
+    uint fundValue = 10;
     struct Airline {
         bool isRegistered;
-        bool isFounded;
+        bool isFunded;
         address account;
     }
     address[] multiCalls = new address[](0);
@@ -29,6 +30,7 @@ contract FlightSuretyData {
     /********************************************************************************************/
 
      event RegisterAirline(address account);
+     event Funded();
 
     /**
     * @dev Constructor
@@ -39,7 +41,7 @@ contract FlightSuretyData {
         contractOwner = msg.sender;
         airlines[contractOwner] = Airline({
             isRegistered: true,
-            isFounded: false,
+            isFunded: false,
             account: contractOwner
         });
         emit RegisterAirline(contractOwner);
@@ -95,7 +97,19 @@ contract FlightSuretyData {
     */
     modifier requireIsRegistered(address _address)
     {
-        require(!airlines[_address].isRegistered,"Airline is already registrated.");
+        require(airlines[_address].isRegistered,"Airline is not registrated.");
+        _;
+    }
+
+    modifier requireIsFunded(address _address)
+    {
+        require(airlines[_address].isFunded,"Airline is not funded.");
+        _;
+    }
+
+    modifier requirePaidEnough(uint _price)
+    { 
+        require(msg.value >= _price,"Value sent is not enough"); 
         _;
     }
 
@@ -184,7 +198,7 @@ contract FlightSuretyData {
     {
         airlines[_address] = Airline({
             isRegistered: true,
-            isFounded: false,
+            isFunded: false,
             account: _address
         });
     }
@@ -219,9 +233,12 @@ contract FlightSuretyData {
     * @dev Initial funding for the insurance. Unless there are too many delayed flights
     *      resulting in insurance payouts, the contract should be self-sustaining
     *
-    */   
-    function fund() public payable
+    */
+    function fund() public payable requirePaidEnough(fundValue)
+    requireIsRegistered(msg.sender)
     {
+        airlines[msg.sender].isFunded = true;
+        emit Funded();
     }
 
     function getFlightKey(address airline,string memory flight,uint256 timestamp) pure internal returns(bytes32) 
