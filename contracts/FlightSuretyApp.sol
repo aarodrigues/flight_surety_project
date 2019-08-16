@@ -37,7 +37,7 @@ contract FlightSuretyApp {
 
  
     /********************************************************************************************/
-    /*                                       FUNCTION   ODIFIERS                                 */
+    /*                                       FUNCTION   MODIFIERS                                 */
     /********************************************************************************************/
 
     // Modifiers help avoid duplication of code. They are typically used to validate something
@@ -48,10 +48,10 @@ contract FlightSuretyApp {
     *      This is used on all state changing functions to pause the contract in 
     *      the event there is an issue that needs to be fixed
     */
-    modifier requireIsOperational() 
+    modifier requireIsOperational()
     {
          // Modify to call data contract's status
-        require(true, "Contract is currently not operational");  
+        require(isOperational(), "Contract is currently not operational");
         _;  // All modifiers require an "_" which indicates where the function body will be added
     }
 
@@ -72,7 +72,7 @@ contract FlightSuretyApp {
     * @dev Contract constructor
     *
     */
-    constructor(address dataContract) public 
+    constructor(address dataContract) public
     {
         contractOwner = msg.sender;
         flightSuretyData = FlightSuretyData(dataContract);
@@ -82,9 +82,9 @@ contract FlightSuretyApp {
     /*                                       UTILITY FUNCTIONS                                  */
     /********************************************************************************************/
 
-    function isOperational() public pure returns(bool) 
+    function isOperational() public view returns(bool)
     {
-        return true;  // Modify to call data contract's status
+        return flightSuretyData.isOperational();  // Modify to call data contract's status
     }
 
     /********************************************************************************************/
@@ -96,9 +96,9 @@ contract FlightSuretyApp {
     * @dev Add an airline to the registration queue
     *
     */   
-    function registerAirline() external pure returns(bool success, uint256 votes)
+    function registerAirline(address _address, bool _vote) external returns(bool success, uint256 votes)
     {
-        return (success, 0);
+        return flightSuretyData.registerAirline(_address,_vote);
     }
 
 
@@ -106,8 +106,14 @@ contract FlightSuretyApp {
     * @dev Register a future flight for insuring.
     *
     */  
-    function registerFlight()external pure
+    function registerFlight(bytes32 id)external pure
     {
+        // flights[id] = Flight {
+        //     isRegistered: true,
+        //     statusCode:10,
+        //     updatedTimestamp:         
+        //     airline: 
+        // } 
 
     }
     
@@ -279,7 +285,7 @@ contract FlightSuretyApp {
 contract FlightSuretyData {
     function isOperational() public view returns(bool);
     function setOperatingStatus(bool mode) external;
-    function registerAirline() external pure;
+    function registerAirline(address _address, bool _aproved) external returns(bool, uint256);
     function buy() external payable;
     function creditInsurees() external pure;
     function pay()external pure;
