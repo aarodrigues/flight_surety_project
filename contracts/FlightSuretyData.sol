@@ -266,7 +266,7 @@ contract FlightSuretyData {
             account: _address
         });
 
-        return (airlines[_address].isRegistered,votes[_address]);
+        return (airlines[_address].isRegistered,votes[_address].approved);
     }
 
 
