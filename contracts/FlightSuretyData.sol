@@ -26,10 +26,15 @@ contract FlightSuretyData {
         address account;
     }
 
+    struct Vote {
+        uint256 approved;
+        address[] airlinesVoter;
+    }
+
     address[] multiCalls = new address[](0);
     mapping(address => bool) authorizedContracts;
     mapping(address => Airline) airlines;
-    mapping(address => uint256) votes;
+    mapping(address => Vote) votes;
     mapping(address => Passenger) passengers;
     address[] airlinesAddrs = new address[](0);
     uint approvedVotesNumber = 0;
@@ -142,49 +147,97 @@ contract FlightSuretyData {
     *
     * When operational mode is disabled, all write transactions except for this one will fail
     */    
-    function setOperatingStatus(bool mode) external requireContractOwner 
+    // function setOperatingStatus(bool mode) external requireContractOwner 
+    // {
+    //     //operational = mode;
+    //     require(mode != operational, "New mode must be different from existing mode");
+    //     //require(userProfiles[msg.sender].isAdmin, "Caller is not an admin");
+
+    //     bool isDuplicate = false;
+    //     for(uint c=0; c<multiCalls.length; c++){
+    //         if (multiCalls[c] == msg.sender) {
+    //             isDuplicate = true;
+    //             break;
+    //         }
+    //     }
+    //     require(!isDuplicate, "Caller has already called this function.");
+
+    //     multiCalls.push(msg.sender);
+    //     if (multiCalls.length >= M) {
+    //         operational = mode;
+    //         multiCalls = new address[](0);
+    //     }
+    // }
+
+    function setOperatingStatus(bool mode) external requireContractOwner
     {
-        //operational = mode;
-        require(mode != operational, "New mode must be different from existing mode");
-        //require(userProfiles[msg.sender].isAdmin, "Caller is not an admin");
+        bool consensus;
+        (multiCalls, consensus) = multiPartyConsensus(multiCalls,msg.sender, THRESHOLD);
 
-        bool isDuplicate = false;
-        for(uint c=0; c<multiCalls.length; c++){
-            if (multiCalls[c] == msg.sender) {
-                isDuplicate = true;
-                break;
-            }
-        }
-        require(!isDuplicate, "Caller has already called this function.");
-
-        multiCalls.push(msg.sender);
-        if (multiCalls.length >= M) {
+        if (consensus) {
             operational = mode;
             multiCalls = new address[](0);
         }
     }
 
-    function approveAirlineRegistration(address airlineAddress, bool vote) internal returns(bool){
+
+    function multiPartyConsensus(address[] storage addrs, address sender, uint threshold) internal returns (address[],bool){
         bool isDuplicate = false;
-        for(uint i = 0; i < airlinesAddrs.length; i++){
-            if (airlinesAddrs[i] == msg.sender) {
+        for(uint i = 0; i < addrs.length; i++){
+            if (addrs[i] == sender) {
                 isDuplicate = true;
                 break;
             }
         }
         require(!isDuplicate, "Airline was already registered.");
 
-        airlinesAddrs.push(msg.sender);
+        addrs.push(sender);
+
+        if (addrs.length >= threshold) {
+            return (addrs, true);
+        }
+
+        return (addrs,false);
+    }
+
+
+    function approveAirlineRegistration(address airlineAddress, bool vote) internal returns(bool){
+        bool consensus;
+        (airlinesAddrs, consensus) = multiPartyConsensus(votes[airlineAddress].airlinesVoter,msg.sender, THRESHOLD);
 
         if(vote){
-            votes[airlineAddress] = votes[airlineAddress].add(1);
+            votes[airlineAddress].approved = votes[airlineAddress].approved.add(1);
         }
-        if (airlinesAddrs.length >= THRESHOLD) {
-            if(votes[airlineAddress] < airlinesAddrs.length.div(2))
+        if (consensus) {
+            if(votes[airlineAddress].approved < votes[airlineAddress].airlinesVoter.length.div(2))
                 return false;
+            else
+                delete votes[airlineAddress];
         }
         return true;
     }
+
+    // function approveAirlineRegistration(address airlineAddress, bool vote) internal returns(bool){
+    //     bool isDuplicate = false;
+    //     for(uint i = 0; i < airlinesAddrs.length; i++){
+    //         if (airlinesAddrs[i] == msg.sender) {
+    //             isDuplicate = true;
+    //             break;
+    //         }
+    //     }
+    //     require(!isDuplicate, "Airline was already registered.");
+
+    //     airlinesAddrs.push(msg.sender);
+
+    //     if(vote){
+    //         votes[airlineAddress] = votes[airlineAddress].add(1);
+    //     }
+    //     if (airlinesAddrs.length >= THRESHOLD) {
+    //         if(votes[airlineAddress] < airlinesAddrs.length.div(2))
+    //             return false;
+    //     }
+    //     return true;
+    // }
 
     function authorizedContract(address appAdress) external requireIsCallerAuthorized {
         authorizedContracts[appAdress] = true;
