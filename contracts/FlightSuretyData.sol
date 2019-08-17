@@ -11,12 +11,13 @@ contract FlightSuretyData {
 
     address private contractOwner;                                      // Account used to deploy contract
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
-    uint constant M = 4;                                                // Multi-party concensus number
-    uint public constant THRESHOLD = 4;
+    uint constant OPERATIONAL_STATUS_CONSENSUS = 0;                                                // Multi-party concensus number
+    uint public constant APROVE_AIRLINE_CONSENSUS = 4;
     uint256 public constant FUND_VALUE = 10 ether;
+    uint256 flightSuretyBalance;
     struct Airline {
+        string airlineName;
         bool isRegistered;
-        bool isFunded;
         address account;
     }
 
@@ -53,10 +54,11 @@ contract FlightSuretyData {
     {
         contractOwner = msg.sender;
         airlines[contractOwner] = Airline({
+            airlineName: "First Airline",
             isRegistered: true,
-            isFunded: false,
             account: contractOwner
         });
+        authorizedContracts[contractOwner] = true;
         emit RegisterAirline(contractOwner);
     }
 
@@ -114,11 +116,11 @@ contract FlightSuretyData {
         _;
     }
 
-    modifier requireIsFunded(address _address)
-    {
-        require(airlines[_address].isFunded,"Airline is not funded.");
-        _;
-    }
+    // modifier requireIsFunded(address _address)
+    // {
+    //     require(airlines[_address].isFunded,"Airline is not funded.");
+    //     _;
+    // }
 
     modifier requirePaidEnough(uint _price)
     {
@@ -126,9 +128,9 @@ contract FlightSuretyData {
         _;
     }
 
-    modifier requireIsPassangerPaid(address addr)
+    modifier requireIsPassangerPaid(address _addr)
     {
-        require(passengers[addr].isPaid, "Passanger did not pay insurance");
+        require(passengers[_addr].isPaid, "Passanger did not pay insurance");
         _;
     }
 
@@ -141,9 +143,19 @@ contract FlightSuretyData {
     *
     * @return A bool that is the current operating status
     */      
-    function isOperational() public view returns(bool) 
+    function isOperational() public view returns(bool)
     {
         return operational;
+    }
+
+    /**
+    * @dev Verify airline register
+    *
+    * @return A bool that is the current operating status
+    */
+    function isAirline(address _airlineAddress) public view returns(bool)
+    {
+        return airlines[_airlineAddress].isRegistered;
     }
 
 
@@ -174,50 +186,50 @@ contract FlightSuretyData {
     //     }
     // }
 
-    function setOperatingStatus(bool mode) external requireContractOwner
+    function setOperatingStatus(bool _mode) external requireContractOwner
     {
         bool consensus;
-        (multiCalls, consensus) = multiPartyConsensus(multiCalls,msg.sender, THRESHOLD);
+        (multiCalls, consensus) = multiPartyConsensus(multiCalls, msg.sender, OPERATIONAL_STATUS_CONSENSUS);
 
         if (consensus) {
-            operational = mode;
+            operational = _mode;
             multiCalls = new address[](0);
         }
     }
 
 
-    function multiPartyConsensus(address[] storage addrs, address sender, uint threshold) internal returns (address[],bool){
+    function multiPartyConsensus(address[] storage _addrs, address _sender, uint _threshold) internal returns (address[],bool){
         bool isDuplicate = false;
-        for(uint i = 0; i < addrs.length; i++){
-            if (addrs[i] == sender) {
+        for(uint i = 0; i < _addrs.length; i++){
+            if (_addrs[i] == _sender) {
                 isDuplicate = true;
                 break;
             }
         }
         require(!isDuplicate, "Airline was already registered.");
 
-        addrs.push(sender);
+        _addrs.push(_sender);
 
-        if (addrs.length >= threshold) {
-            return (addrs, true);
+        if (_addrs.length >= _threshold) {
+            return (_addrs, true);
         }
 
-        return (addrs,false);
+        return (_addrs,false);
     }
 
 
-    function approveAirlineRegistration(address airlineAddress, bool vote) internal returns(bool){
+    function approveAirlineRegistration(address _airlineAddress, bool _vote) internal returns(bool){
         bool consensus;
-        (airlinesAddrs, consensus) = multiPartyConsensus(votes[airlineAddress].airlinesVoter,msg.sender, THRESHOLD);
+        (airlinesAddrs, consensus) = multiPartyConsensus(votes[_airlineAddress].airlinesVoter,msg.sender, APROVE_AIRLINE_CONSENSUS);
 
-        if(vote){
-            votes[airlineAddress].approved = votes[airlineAddress].approved.add(1);
+        if(_vote){
+            votes[_airlineAddress].approved = votes[_airlineAddress].approved.add(1);
         }
         if (consensus) {
-            if(votes[airlineAddress].approved < votes[airlineAddress].airlinesVoter.length.div(2))
+            if(votes[_airlineAddress].approved < votes[_airlineAddress].airlinesVoter.length.div(2))
                 return false;
             else
-                delete votes[airlineAddress];
+                delete votes[_airlineAddress];
         }
         return true;
     }
@@ -244,12 +256,12 @@ contract FlightSuretyData {
     //     return true;
     // }
 
-    function authorizedContract(address appAdress) external requireIsCallerAuthorized {
-        authorizedContracts[appAdress] = true;
+    function authorizeCaller(address _appAdress) external requireIsCallerAuthorized {
+        authorizedContracts[_appAdress] = true;
     }
 
-    function deuthorizedContract(address appAdress) external requireIsCallerAuthorized {
-        delete authorizedContracts[appAdress];
+    function deauthorizeCaller(address _appAdress) external requireIsCallerAuthorized {
+        delete authorizedContracts[_appAdress];
     }
 
     /********************************************************************************************/
@@ -262,18 +274,17 @@ contract FlightSuretyData {
     *
     * @dev Airlines just get eligible when they pay the tax
     */
-    function registerAirline(address _address, bool _aproved) external requireIsOperational
+    function registerAirline(string _name, address _address, bool _aproved) external requireIsOperational
      requireIsRegistered(_address) requireIsConsensus(_address,_aproved) returns(bool, uint256)
     {
         airlines[_address] = Airline({
-            isRegistered: true,
-            isFunded: false,
+            airlineName: _name,
+            isRegistered: false,
             account: _address
         });
 
         return (airlines[_address].isRegistered,votes[_address].approved);
     }
-
 
    /**
     * @dev Buy insurance for a flight
@@ -305,11 +316,10 @@ contract FlightSuretyData {
     *      resulting in insurance payouts, the contract should be self-sustaining
     *
     */
-    function fund() public payable requirePaidEnough(FUND_VALUE)
-    requireIsRegistered(msg.sender)
+    function fund(address _airlineAddress, uint256  _value) public payable requireIsOperational requirePaidEnough(FUND_VALUE)
     {
-        airlines[msg.sender].isFunded = true;
-        emit Funded();
+        airlines[_airlineAddress].isRegistered = true;
+        flightSuretyBalance = flightSuretyBalance.add(_value);
     }
 
     function getFlightKey(address airline,string memory flight,uint256 timestamp) pure internal returns(bytes32) 
@@ -323,7 +333,7 @@ contract FlightSuretyData {
     */
     function() external payable 
     {
-        fund();
+        //fund();
     }
 
 

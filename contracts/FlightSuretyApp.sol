@@ -96,9 +96,9 @@ contract FlightSuretyApp {
     * @dev Add an airline to the registration queue
     *
     */   
-    function registerAirline(address _address, bool _vote) external returns(bool success, uint256 votes)
+    function registerAirline(string _name, address _address, bool _aproved) external returns(bool success, uint256 votes)
     {
-        return flightSuretyData.registerAirline(_address,_vote);
+        return flightSuretyData.registerAirline(_name,_address,_aproved);
     }
 
 
@@ -284,8 +284,8 @@ contract FlightSuretyApp {
 /** Just external contract are visible from here */
 contract FlightSuretyData {
     function isOperational() public view returns(bool);
-    function setOperatingStatus(bool mode) external;
-    function registerAirline(address _address, bool _aproved) external returns(bool, uint256);
+    function setOperatingStatus(bool _mode) external;
+    function registerAirline(string _name, address _address, bool _aproved) external returns(bool, uint256);
     function buy() external payable;
     function creditInsurees() external pure;
     function pay()external pure;
