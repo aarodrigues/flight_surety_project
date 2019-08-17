@@ -21,9 +21,8 @@ contract FlightSuretyData {
     }
 
     struct Passenger {
-        uint256 value;
-        bool isFunded;
-        address account;
+        uint256 payment;
+        bool isPaid;
     }
 
     struct Vote {
@@ -124,6 +123,12 @@ contract FlightSuretyData {
     modifier requirePaidEnough(uint _price)
     {
         require(msg.value >= _price,"Value sent is not enough");
+        _;
+    }
+
+    modifier requireIsPassangerPaid(address addr)
+    {
+        require(passengers[addr].isPaid, "Passanger did not pay insurance");
         _;
     }
 
