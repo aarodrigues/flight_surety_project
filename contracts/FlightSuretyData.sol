@@ -22,8 +22,11 @@ contract FlightSuretyData {
     }
 
     struct Passenger {
-        uint256 payment;
-        bool isPaid;
+        uint256 insuraceValue;
+        uint256 indemnity;
+        bool isInsured;
+        bool isIndemnified;
+        address account;
     }
 
     struct Vote {
@@ -71,7 +74,7 @@ contract FlightSuretyData {
 
     /**
     * @dev Modifier that requires the "operational" boolean variable to be "true"
-    *      This is used on all state changing functions to pause the contract in 
+    *      This is used on all state changing functions to pause the contract in
     *      the event there is an issue that needs to be fixed
     */
     modifier requireIsOperational()
@@ -116,23 +119,31 @@ contract FlightSuretyData {
         _;
     }
 
-    // modifier requireIsFunded(address _address)
-    // {
-    //     require(airlines[_address].isFunded,"Airline is not funded.");
-    //     _;
-    // }
-
     modifier requirePaidEnough(uint _price)
     {
         require(msg.value >= _price,"Value sent is not enough");
         _;
     }
 
-    modifier requireIsPassangerPaid(address _addr)
+    modifier requireIsInsured(address _addr)
     {
-        require(passengers[_addr].isPaid, "Passanger did not pay insurance");
+        require(passengers[_addr].isInsured, "Passanger did not pay insurance");
         _;
     }
+
+    modifier requireIsExternallyOwnedAccount()
+    {
+        require(msg.sender == tx.origin, "Contract is not allowed");
+        _;
+    }
+
+    modifier requireIsContractBalanceEnough(uint _value)
+    {
+        require(address(this).balance >= _value, "There is no enough balance to pay this issurance");
+        _;
+    }
+
+    
 
     /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
@@ -142,7 +153,7 @@ contract FlightSuretyData {
     * @dev Get operating status of contract
     *
     * @return A bool that is the current operating status
-    */      
+    */
     function isOperational() public view returns(bool)
     {
         return operational;
@@ -158,34 +169,11 @@ contract FlightSuretyData {
         return airlines[_airlineAddress].isRegistered;
     }
 
-
     /**
     * @dev Sets contract operations on/off
     *
     * When operational mode is disabled, all write transactions except for this one will fail
-    */    
-    // function setOperatingStatus(bool mode) external requireContractOwner 
-    // {
-    //     //operational = mode;
-    //     require(mode != operational, "New mode must be different from existing mode");
-    //     //require(userProfiles[msg.sender].isAdmin, "Caller is not an admin");
-
-    //     bool isDuplicate = false;
-    //     for(uint c=0; c<multiCalls.length; c++){
-    //         if (multiCalls[c] == msg.sender) {
-    //             isDuplicate = true;
-    //             break;
-    //         }
-    //     }
-    //     require(!isDuplicate, "Caller has already called this function.");
-
-    //     multiCalls.push(msg.sender);
-    //     if (multiCalls.length >= M) {
-    //         operational = mode;
-    //         multiCalls = new address[](0);
-    //     }
-    // }
-
+    */
     function setOperatingStatus(bool _mode) external requireContractOwner
     {
         bool consensus;
@@ -234,27 +222,6 @@ contract FlightSuretyData {
         return true;
     }
 
-    // function approveAirlineRegistration(address airlineAddress, bool vote) internal returns(bool){
-    //     bool isDuplicate = false;
-    //     for(uint i = 0; i < airlinesAddrs.length; i++){
-    //         if (airlinesAddrs[i] == msg.sender) {
-    //             isDuplicate = true;
-    //             break;
-    //         }
-    //     }
-    //     require(!isDuplicate, "Airline was already registered.");
-
-    //     airlinesAddrs.push(msg.sender);
-
-    //     if(vote){
-    //         votes[airlineAddress] = votes[airlineAddress].add(1);
-    //     }
-    //     if (airlinesAddrs.length >= THRESHOLD) {
-    //         if(votes[airlineAddress] < airlinesAddrs.length.div(2))
-    //             return false;
-    //     }
-    //     return true;
-    // }
 
     function authorizeCaller(address _appAdress) external requireIsCallerAuthorized {
         authorizedContracts[_appAdress] = true;
@@ -298,8 +265,10 @@ contract FlightSuretyData {
     /**
      *  @dev Credits payouts to insurees
     */
-    function creditInsurees() external pure
+    function creditInsurees(address _passengerAddr, uint256 _indemnity) external requireIsOperational()
     {
+        passengers[_passengerAddr].indemnity = passengers[_passengerAddr].indemnity.add(_indemnity);
+        passengers[_passengerAddr].isIndemnified = true;
     }
     
 
@@ -307,8 +276,13 @@ contract FlightSuretyData {
      *  @dev Transfers eligible payout funds to insuree
      *
     */
-    function pay()external pure
+    function pay(address _account, uint256 _value) external payable requireIsOperational()
+    requireIsExternallyOwnedAccount() requireIsContractBalanceEnough(_value)
     {
+        uint256 amount = passengers[_account].indemnity;
+        uint256 balance = amount.sub(_value);
+        passengers[_account].indemnity = balance;
+        _account.transfer(_value);
     }
 
    /**
@@ -322,7 +296,7 @@ contract FlightSuretyData {
         flightSuretyBalance = flightSuretyBalance.add(_value);
     }
 
-    function getFlightKey(address airline,string memory flight,uint256 timestamp) pure internal returns(bytes32) 
+    function getFlightKey(address airline,string memory flight,uint256 timestamp) pure internal returns(bytes32)
     {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
@@ -331,7 +305,7 @@ contract FlightSuretyData {
     * @dev Fallback function for funding smart contract.
     *
     */
-    function() external payable 
+    function() external payable
     {
         //fund();
     }
