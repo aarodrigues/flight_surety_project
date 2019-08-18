@@ -30,7 +30,7 @@ contract FlightSuretyApp {
     struct Flight {
         bool isRegistered;
         uint8 statusCode;
-        uint256 updatedTimestamp;        
+        uint256 updatedTimestamp;
         address airline;
     }
     mapping(bytes32 => Flight) private flights;
@@ -45,7 +45,7 @@ contract FlightSuretyApp {
 
     /**
     * @dev Modifier that requires the "operational" boolean variable to be "true"
-    *      This is used on all state changing functions to pause the contract in 
+    *      This is used on all state changing functions to pause the contract in
     *      the event there is an issue that needs to be fixed
     */
     modifier requireIsOperational()
@@ -95,7 +95,7 @@ contract FlightSuretyApp {
    /**
     * @dev Add an airline to the registration queue
     *
-    */   
+    */
     function registerAirline(string _name, address _address, bool _aproved) external returns(bool success, uint256 votes)
     {
         return flightSuretyData.registerAirline(_name,_address,_aproved);
@@ -105,24 +105,49 @@ contract FlightSuretyApp {
    /**
     * @dev Register a future flight for insuring.
     *
-    */  
-    function registerFlight(bytes32 id)external pure
+    */
+    function registerFlight(address _airline, string _code, uint256 _timestamp) external
     {
-        // flights[id] = Flight {
-        //     isRegistered: true,
-        //     statusCode:10,
-        //     updatedTimestamp:         
-        //     airline: 
-        // } 
 
+        // add requirements
+        bytes32 key = getFlightKey(_airline, _code, _timestamp);
+        flights[key] = Flight ({
+            isRegistered: true,
+            statusCode: STATUS_CODE_UNKNOWN,
+            updatedTimestamp: _timestamp,
+            airline: _airline
+        });
+
+    }
+
+    function calculeIndemnity(uint256 _value) internal pure returns(uint256)
+    {
+        uint amount = _value;
+        amount = amount.div(2);
+        uint indemnity = _value.add(amount);
+        return indemnity;
+    }
+
+    function setIndemnity(string memory _flightCode) internal view
+    {
+        (address[] memory passengers, uint256[] memory value) = flightSuretyData.getInsuranceList(_flightCode);
+        for(uint i = 0; i < passengers.length; i++){
+            uint256 indemnity = calculeIndemnity(value[i]);
+            flightSuretyData.creditInsurees(passengers[i],indemnity);
+        }
     }
     
    /**
     * @dev Called after oracle has updated flight status
     *
-    */  
-    function processFlightStatus(address airline, string memory flight, uint256 timestamp, uint8 statusCode) internal pure
+    */
+    function processFlightStatus(address _airline, string memory _flightCode, uint256 _timestamp, uint8 _statusCode) internal
     {
+        if(_statusCode == STATUS_CODE_LATE_AIRLINE){
+            bytes32 key = getFlightKey(_airline,_flightCode,_timestamp);
+            flights[key].statusCode = _statusCode;
+            setIndemnity(_flightCode);
+        }
     }
 
 
@@ -139,7 +164,7 @@ contract FlightSuretyApp {
                                             });
 
         emit OracleRequest(index, airline, flight, timestamp);
-    } 
+    }
 
 
 // region ORACLE MANAGEMENT
@@ -287,8 +312,9 @@ contract FlightSuretyData {
     function setOperatingStatus(bool _mode) external;
     function registerAirline(string _name, address _address, bool _aproved) external returns(bool, uint256);
     function buy() external payable;
-    function creditInsurees() external pure;
+    function creditInsurees(address _passenger, uint256 _value) external pure;
     function pay()external pure;
     function fund() public payable;
     function getFlightKey(address airline,string memory flight,uint256 timestamp) pure internal returns(bytes32);
+    function getInsuranceList(string _flightCode) external view returns(address[], uint256[]);
 }

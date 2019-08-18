@@ -29,6 +29,11 @@ contract FlightSuretyData {
         address account;
     }
 
+    struct Insurance {
+        address[] insuredPassengers;
+        uint[] insuraceValue;
+    }
+
     struct Vote {
         uint256 approved;
         address[] airlinesVoter;
@@ -39,6 +44,7 @@ contract FlightSuretyData {
     mapping(address => Airline) airlines;
     mapping(address => Vote) votes;
     mapping(address => Passenger) passengers;
+    mapping(string => Insurance) insurances;
     address[] airlinesAddrs = new address[](0);
     uint approvedVotesNumber = 0;
 
@@ -253,24 +259,28 @@ contract FlightSuretyData {
         return (airlines[_address].isRegistered,votes[_address].approved);
     }
 
+
    /**
     * @dev Buy insurance for a flight
     *
     */
-    function buy() external payable
+    function buy(address _passengerAddr, string _flightCode, uint256 _payment) external payable requireIsOperational()
     {
-
+        insurances[_flightCode].insuredPassengers.push(_passengerAddr);
+        insurances[_flightCode].insuraceValue.push(_payment);
+        passengers[_passengerAddr].insuraceValue = _payment;
+        flightSuretyBalance = flightSuretyBalance.add(_payment);
     }
 
     /**
      *  @dev Credits payouts to insurees
     */
-    function creditInsurees(address _passengerAddr, uint256 _indemnity) external requireIsOperational()
+    function creditInsurees(address _passenger, uint256 _indemnity) external requireIsOperational()
     {
-        passengers[_passengerAddr].indemnity = passengers[_passengerAddr].indemnity.add(_indemnity);
-        passengers[_passengerAddr].isIndemnified = true;
+        passengers[_passenger].indemnity = passengers[_passenger].indemnity.add(_indemnity);
+        passengers[_passenger].isIndemnified = true;
     }
-    
+
 
     /**
      *  @dev Transfers eligible payout funds to insuree
@@ -299,6 +309,10 @@ contract FlightSuretyData {
     function getFlightKey(address airline,string memory flight,uint256 timestamp) pure internal returns(bytes32)
     {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
+    }
+
+    function getInsuranceList(string _flightCode) external view returns(address[] memory , uint256[] memory){
+        return (insurances[_flightCode].insuredPassengers, insurances[_flightCode].insuraceValue);
     }
 
     /**
