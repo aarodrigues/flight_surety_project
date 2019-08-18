@@ -27,6 +27,9 @@ contract FlightSuretyApp {
     address private contractOwner;          // Account used to deploy contract
     FlightSuretyData flightSuretyData;
 
+
+    uint256 private constant MAX_INSURANCE = 1 ether;
+
     struct Flight {
         bool isRegistered;
         uint8 statusCode;
@@ -91,7 +94,7 @@ contract FlightSuretyApp {
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
 
-  
+
    /**
     * @dev Add an airline to the registration queue
     *
@@ -108,7 +111,6 @@ contract FlightSuretyApp {
     */
     function registerFlight(address _airline, string _code, uint256 _timestamp) external
     {
-
         // add requirements
         bytes32 key = getFlightKey(_airline, _code, _timestamp);
         flights[key] = Flight ({
@@ -148,6 +150,12 @@ contract FlightSuretyApp {
             flights[key].statusCode = _statusCode;
             setIndemnity(_flightCode);
         }
+    }
+
+    function buyInsurance(uint256 _payment, string _flightCode) external payable requireIsOperational()
+    {
+        require(msg.value <= MAX_INSURANCE, "Passenger cannot pay more than 1 ether");
+        flightSuretyData.buy(msg.sender, _flightCode, _payment);
     }
 
 
@@ -311,7 +319,7 @@ contract FlightSuretyData {
     function isOperational() public view returns(bool);
     function setOperatingStatus(bool _mode) external;
     function registerAirline(string _name, address _address, bool _aproved) external returns(bool, uint256);
-    function buy() external payable;
+    function buy(address _passengerAddr, string _flightCode, uint256 _payment) external payable;
     function creditInsurees(address _passenger, uint256 _value) external pure;
     function pay()external pure;
     function fund() public payable;

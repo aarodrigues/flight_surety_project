@@ -52,8 +52,8 @@ contract FlightSuretyData {
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
 
-     event RegisterAirline(address account);
-     event Funded();
+    event RegisterAirline(address account);
+    event Funded();
 
     /**
     * @dev Constructor
@@ -74,9 +74,6 @@ contract FlightSuretyData {
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
     /********************************************************************************************/
-
-    // Modifiers help avoid duplication of code. They are typically used to validate something
-    // before a function is allowed to be executed.
 
     /**
     * @dev Modifier that requires the "operational" boolean variable to be "true"
@@ -125,31 +122,41 @@ contract FlightSuretyData {
         _;
     }
 
+    /**
+    * @dev Modifier verify the price sent
+    */
     modifier requirePaidEnough(uint _price)
     {
         require(msg.value >= _price,"Value sent is not enough");
         _;
     }
 
+    /**
+    * @dev Modifier verify if passenger is insured
+    */
     modifier requireIsInsured(address _addr)
     {
         require(passengers[_addr].isInsured, "Passanger did not pay insurance");
         _;
     }
 
+    /**
+    * @dev Modifier verify caller is a EOA
+    */
     modifier requireIsExternallyOwnedAccount()
     {
         require(msg.sender == tx.origin, "Contract is not allowed");
         _;
     }
 
+    /**
+    * @dev Modifier verify if contract has money enough
+    */
     modifier requireIsContractBalanceEnough(uint _value)
     {
         require(address(this).balance >= _value, "There is no enough balance to pay this issurance");
         _;
     }
-
-    
 
     /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
@@ -229,11 +236,11 @@ contract FlightSuretyData {
     }
 
 
-    function authorizeCaller(address _appAdress) external requireIsCallerAuthorized {
+    function authorizeCaller(address _appAdress) external requireIsCallerAuthorized requireIsOperational {
         authorizedContracts[_appAdress] = true;
     }
 
-    function deauthorizeCaller(address _appAdress) external requireIsCallerAuthorized {
+    function deauthorizeCaller(address _appAdress) external requireIsCallerAuthorized requireIsOperational {
         delete authorizedContracts[_appAdress];
     }
 
@@ -287,11 +294,12 @@ contract FlightSuretyData {
      *
     */
     function pay(address _account, uint256 _value) external payable requireIsOperational()
-    requireIsExternallyOwnedAccount() requireIsContractBalanceEnough(_value)
+        requireIsExternallyOwnedAccount() requireIsContractBalanceEnough(_value)
     {
         uint256 amount = passengers[_account].indemnity;
         uint256 balance = amount.sub(_value);
         passengers[_account].indemnity = balance;
+        passengers[_account].isIndemnified = true;
         _account.transfer(_value);
     }
 
@@ -306,7 +314,7 @@ contract FlightSuretyData {
         flightSuretyBalance = flightSuretyBalance.add(_value);
     }
 
-    function getFlightKey(address airline,string memory flight,uint256 timestamp) pure internal returns(bytes32)
+    function getFlightKey(address airline,string memory flight,uint256 timestamp) internal pure returns(bytes32)
     {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
