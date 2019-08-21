@@ -25,6 +25,77 @@ import './flightsurety.css';
                 display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: result.flight + ' ' + result.timestamp} ]);
             });
         })
+        
+        // User-submitted transaction
+        DOM.elid('register-airline').addEventListener('click', () => {
+            let airline = DOM.elid('airline-addr').value;
+            contract.registerAirline(airline,(error, result) => {
+                console.log(result);
+            });
+            DOM.elid('airline-addr').value = "";
+        })    
+
+        // // User-submitted transaction
+        // DOM.elid('registerFlight').addEventListener('click', () => {
+        //     let flight = DOM.elid('dropDownFlights_register').value;
+        //     contract.generateFlight(flight,(error, result) => {
+        //         console.log(result);
+        //     });
+        // })    
+
+        // // User-submitted transaction
+        // DOM.elid('isRegistered').addEventListener('click', () => {
+        //     let flight = DOM.elid('dropDownFlights_isRegistered').value;
+        //     contract.isFlightRegistered(flight,(error, result) => {
+        //         console.log(result);
+        //     });
+        // })  
+        
+        // // User-submitted transaction
+        // DOM.elid('fundAirline').addEventListener('click', () => {
+        //     contract.fundAirline((error, result) => {
+        //         console.log(result);
+        //     });
+        // })  
+
+        // // User-submitted transaction
+        // DOM.elid('buyInsurance').addEventListener('click', () => {            
+        //     let insuranceValue = DOM.elid('insuranceValue').value;
+        //     let flight = DOM.elid('dropDownFlights_buyInsurance').value;            
+        //     contract.buyInsurace(flight,insuranceValue,(error, result) => {
+        //         console.log(result);
+        //     });
+        // })  
+
+        // // User-submitted transaction
+        // DOM.elid('showCreditBalance').addEventListener('click', () => {
+        //     contract.returnCreditAmount((error, result) => {
+        //         console.log(result);
+        //     });
+        // }) 
+
+        // // User-submitted transaction
+        // DOM.elid('withdrawl').addEventListener('click', () => {
+        //     contract.payoutInsurance((error, result) => {
+        //         console.log(result);
+        //     });
+        // }) 
+
+        // // User-submitted transaction
+        // DOM.elid('fetchFlightStatus').addEventListener('click', () => {
+        //     let flight = DOM.elid('dropDownFlights_fetchFlight').value;   
+        //     contract.fetchFlightStatus(flight,(error, result) => {
+        //         console.log(result);
+        //     });
+        // }) 
+
+        // // User-submitted transaction
+        // DOM.elid('showUserBalance').addEventListener('click', () => {
+        //     contract.showUserBalance((error, result) => {
+        //         console.log(result);
+        //     });
+        // }) 
+
     
     });
     
