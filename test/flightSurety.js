@@ -78,17 +78,69 @@ contract('Flight Surety Tests', async (accounts) => {
 
     // ACT
     try {
-        await config.flightSuretyApp.registerAirline("New Airline", newAirline,true, {from: config.firstAirline});
+        await config.flightSuretyApp.registerAirline("New Airline", newAirline, {from: config.firstAirline});
     }
     catch(e) {
 
     }
-    let result = await config.flightSuretyData.isAirline.call(newAirline); 
+    let result = await config.flightSuretyData.isAirlineRegistered.call(newAirline); 
 
     // ASSERT
     assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding");
 
   });
+
+  it(`(multiparty) can block access to setOperatingStatus() for non-Contract Owner account from flightSuretyApp`, async function () {
+
+    // Ensure that access is denied for non-Contract Owner account
+    let accessDenied = false;
+    try 
+    {
+        await config.flightSuretyApp.setOperatingStatus(false, { from: config.testAddresses[2] });
+    }
+    catch(e) {
+        accessDenied = true;
+    }
+    assert.equal(accessDenied, true, "Access not restricted to Contract Owner");
+          
+  });
+
+  it(`can register a airline calling registerAirline() `, async function () {
+    // Ensure that register is false before call function
+    let registred = false;
+    let error;
+
+         await config.flightSuretyApp.registerAirline.call("Avianca",config.testAddresses[2], { from: config.firstAirline })
+        .then((result)=>{
+            registred = result;
+        }).catch((e) => {
+            error = e;
+        });
+
+    assert.equal(registred, true, "Airline was not registred "+error);
+
+  });
+
+//   it(`can register the fifth airline calling registerAirline() `, async function () {
+//     // Ensure that register is false before call function
+//     let registred = false;
+//     let error;
+
+//     for(let i = 0; i>=5; i++){
+//         await config.flightSuretyApp.registerAirline.call("Avianca",config.testAddresses[2], { from: config.firstAirline })
+//        .then((result)=>{
+//            registred = result;
+//        }).catch((e) => {
+//            error = e;
+//        });
+//     }
+
+
+//     assert.equal(registred, true, "Airline was not registred "+error);
+
+//   });
+
+
  
 
 });

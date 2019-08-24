@@ -28,6 +28,21 @@ contract FlightSuretyApp {
     FlightSuretyData flightSuretyData;
 
 
+// consensus variables ------------
+    struct Vote {
+        uint256 approved;
+        address[] airlinesVoter;
+    }
+
+    address[] multiCalls = new address[](0);
+    uint constant OPERATIONAL_STATUS_CONSENSUS = 0;
+    uint public constant APROVE_AIRLINE_CONSENSUS = 4;
+    address[] airlinesAddrs = new address[](0);
+    mapping(address => Vote) votes;
+
+// --------------------------------
+
+
     uint256 private constant MAX_INSURANCE = 1 ether;
 
     struct Flight {
@@ -67,6 +82,17 @@ contract FlightSuretyApp {
         _;
     }
 
+    /**
+    * @dev Modifier that requires the msg.sender is into "authorizedContracts"
+    */
+    modifier requireIsRegistered(address _address)
+    {
+        require(flightSuretyData.isAirlineRegistered(_address),"Airline is not registrated.");
+        _;
+    }
+
+// region
+
     /********************************************************************************************/
     /*                                       CONSTRUCTOR                                        */
     /********************************************************************************************/
@@ -94,15 +120,66 @@ contract FlightSuretyApp {
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
 
+// endregion
 
    /**
     * @dev Add an airline to the registration queue
     *
     */
-    function registerAirline(string _name, address _address) external returns(bool success, uint256 votes)
+    function registerAirline(string _name, address _address) external requireIsRegistered(msg.sender) returns(bool)
     {
-        return flightSuretyData.registerAirline(_name,_address,true);
+        return flightSuretyData.registerAirline(_name,_address);
     }
+
+
+    function setOperatingStatus(bool _mode) external requireContractOwner
+    {
+        bool statusConsensus;
+        (multiCalls, statusConsensus) = multiPartyConsensus(multiCalls, msg.sender, OPERATIONAL_STATUS_CONSENSUS);
+
+        if (statusConsensus) {
+            flightSuretyData.setOperatingStatus(_mode);
+            multiCalls = new address[](0);
+        }
+    }
+
+    function multiPartyConsensus(address[] storage _addrs, address _sender, uint _threshold) internal returns (address[],bool){
+        bool isDuplicate = false;
+        for(uint i = 0; i < _addrs.length; i++){
+            if (_addrs[i] == _sender) {
+                isDuplicate = true;
+                break;
+            }
+        }
+        require(!isDuplicate, "Airline was already registered.");
+
+        _addrs.push(_sender);
+
+        if (_addrs.length >= _threshold) {
+            return (_addrs, true);
+        }
+
+        return (_addrs,false);
+    }
+
+
+    function approveAirlineRegistration(address _airlineAddress, bool _vote) internal {
+        bool consensus;
+        (airlinesAddrs, consensus) = multiPartyConsensus(votes[_airlineAddress].airlinesVoter,msg.sender, APROVE_AIRLINE_CONSENSUS);
+
+        if(_vote){
+            votes[_airlineAddress].approved = votes[_airlineAddress].approved.add(1);
+        }
+        if (consensus) {
+            if(votes[_airlineAddress].approved < votes[_airlineAddress].airlinesVoter.length.div(2))
+                flightSuretyData.setConsensus(false);
+            else
+                delete votes[_airlineAddress];
+        }
+        flightSuretyData.setConsensus(true);
+    }
+
+
 
 
    /**
@@ -317,8 +394,10 @@ contract FlightSuretyApp {
 /** Just external contract are visible from here */
 contract FlightSuretyData {
     function isOperational() public view returns(bool);
+    function isAirlineRegistered(address _airlineAddress) public view returns(bool);
     function setOperatingStatus(bool _mode) external;
-    function registerAirline(string _name, address _address, bool _aproved) external returns(bool, uint256);
+    function setConsensus(bool _consensus) external;
+    function registerAirline(string _name, address _address) external returns(bool);
     function buy(address _passengerAddr, string _flightCode, uint256 _payment) external payable;
     function creditInsurees(address _passenger, uint256 _value) external pure;
     function pay()external pure;

@@ -34,19 +34,23 @@ contract FlightSuretyData {
         uint[] insuraceValue;
     }
 
+
+    //deletar
     struct Vote {
         uint256 approved;
         address[] airlinesVoter;
     }
-
     address[] multiCalls = new address[](0);
+    mapping(address => Vote) votes;
+    // ----------
+
     mapping(address => bool) authorizedContracts;
     mapping(address => Airline) airlines;
-    mapping(address => Vote) votes;
     mapping(address => Passenger) passengers;
     mapping(string => Insurance) insurances;
     address[] airlinesAddrs = new address[](0);
     uint approvedVotesNumber = 0;
+    bool consensus = true;
 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
@@ -59,16 +63,16 @@ contract FlightSuretyData {
     * @dev Constructor
     *      The deploying account becomes contractOwner
     */
-    constructor () public
+    constructor (address _firstAirline) public
     {
         contractOwner = msg.sender;
-        airlines[contractOwner] = Airline({
+        airlines[_firstAirline] = Airline({
             airlineName: "First Airline",
             isRegistered: true,
-            account: contractOwner
+            account: _firstAirline
         });
         authorizedContracts[contractOwner] = true;
-        emit RegisterAirline(contractOwner);
+        emit RegisterAirline(_firstAirline);
     }
 
     /********************************************************************************************/
@@ -107,18 +111,9 @@ contract FlightSuretyData {
     /**
     * @dev Modifier that requires consensus to aprove new airlines
     */
-    modifier requireIsConsensus(address _address, bool vote)
+    modifier requireIsConsensus()
     {
-        require(approveAirlineRegistration(_address, vote), "Register wasn't aproved");
-        _;
-    }
-
-    /**
-    * @dev Modifier that requires the msg.sender is into "authorizedContracts"
-    */
-    modifier requireIsRegistered(address _address)
-    {
-        require(airlines[_address].isRegistered,"Airline is not registrated.");
+        require(consensus, "Register wasn't aproved");
         _;
     }
 
@@ -175,9 +170,9 @@ contract FlightSuretyData {
     /**
     * @dev Verify airline register
     *
-    * @return A bool that is the current operating status
+    * @return If airline is registred
     */
-    function isAirline(address _airlineAddress) public view returns(bool)
+    function isAirlineRegistered(address _airlineAddress) public view returns(bool)
     {
         return airlines[_airlineAddress].isRegistered;
     }
@@ -189,52 +184,18 @@ contract FlightSuretyData {
     */
     function setOperatingStatus(bool _mode) external requireContractOwner
     {
-        bool consensus;
-        (multiCalls, consensus) = multiPartyConsensus(multiCalls, msg.sender, OPERATIONAL_STATUS_CONSENSUS);
-
-        if (consensus) {
-            operational = _mode;
-            multiCalls = new address[](0);
-        }
+        operational = _mode;
     }
 
-
-    function multiPartyConsensus(address[] storage _addrs, address _sender, uint _threshold) internal returns (address[],bool){
-        bool isDuplicate = false;
-        for(uint i = 0; i < _addrs.length; i++){
-            if (_addrs[i] == _sender) {
-                isDuplicate = true;
-                break;
-            }
-        }
-        require(!isDuplicate, "Airline was already registered.");
-
-        _addrs.push(_sender);
-
-        if (_addrs.length >= _threshold) {
-            return (_addrs, true);
-        }
-
-        return (_addrs,false);
+     /**
+    * @dev Sets contract operations on/off
+    *
+    * When operational mode is disabled, all write transactions except for this one will fail
+    */
+    function setConsensus(bool _consensus) external requireContractOwner
+    {
+        consensus = _consensus;
     }
-
-
-    function approveAirlineRegistration(address _airlineAddress, bool _vote) internal returns(bool){
-        bool consensus;
-        (airlinesAddrs, consensus) = multiPartyConsensus(votes[_airlineAddress].airlinesVoter,msg.sender, APROVE_AIRLINE_CONSENSUS);
-
-        if(_vote){
-            votes[_airlineAddress].approved = votes[_airlineAddress].approved.add(1);
-        }
-        if (consensus) {
-            if(votes[_airlineAddress].approved < votes[_airlineAddress].airlinesVoter.length.div(2))
-                return false;
-            else
-                delete votes[_airlineAddress];
-        }
-        return true;
-    }
-
 
     function authorizeCaller(address _appAdress) external requireIsCallerAuthorized requireIsOperational {
         authorizedContracts[_appAdress] = true;
@@ -254,8 +215,8 @@ contract FlightSuretyData {
     *
     * @dev Airlines just get eligible when they pay the tax
     */
-    function registerAirline(string _name, address _address, bool _vote) external requireIsOperational
-     requireIsRegistered(_address) requireIsConsensus(_address,_vote) returns(bool, uint256)
+    function registerAirline(string _name, address _address) external requireIsOperational
+     requireIsConsensus() returns(bool)
     {
         airlines[_address] = Airline({
             airlineName: _name,
@@ -263,7 +224,7 @@ contract FlightSuretyData {
             account: _address
         });
 
-        return (airlines[_address].isRegistered,votes[_address].approved);
+        return true;
     }
 
 
