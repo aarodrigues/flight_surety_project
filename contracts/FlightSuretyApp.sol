@@ -35,7 +35,7 @@ contract FlightSuretyApp {
     }
 
     address[] multiCalls = new address[](0);
-    uint constant OPERATIONAL_STATUS_CONSENSUS = 0;
+    uint constant OPERATIONAL_STATUS_CONSENSUS = 2;
     uint public constant APROVE_AIRLINE_CONSENSUS = 4;
     address[] airlinesAddrs = new address[](0);
     mapping(address => Vote) votes;
@@ -132,8 +132,9 @@ contract FlightSuretyApp {
     }
 
 
-    function setOperatingStatus(bool _mode) external requireContractOwner
+    function setOperatingStatus(bool _mode) external
     {
+        require(flightSuretyData.isOperational() != _mode,"New mode must be different from existing mode");
         bool statusConsensus;
         (multiCalls, statusConsensus) = multiPartyConsensus(multiCalls, msg.sender, OPERATIONAL_STATUS_CONSENSUS);
 

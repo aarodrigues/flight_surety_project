@@ -71,6 +71,57 @@ contract('Flight Surety Tests', async (accounts) => {
 
   });
 
+//   it(`(multiparty) cannot change status to the actual status`, async function () {
+
+//     let reverted = false;
+//     try 
+//     {
+//         await config.flightSuretyApp.setOperatingStatus(true);
+//     }
+//     catch(e) {
+//         reverted = true;
+//     }
+//     assert.equal(reverted, true, "Access not blocked for requireIsOperational");      
+
+//   });
+
+  it(`(multiparty) cannot change status without consensus Considering OPERATIONAL_STATUS_CONSENSUS > 0`, async function () {
+    // There is a problem with ownership, this test just work when there is no modifier to isOwner 
+    let mode = true;
+    let error;
+    try 
+    {
+        await config.flightSuretyApp.setOperatingStatus(false,{ from: config.owner });
+        mode = await config.flightSuretyApp.isOperational.call();
+    }
+    catch(e) {
+        error = e;
+    }
+
+    assert.equal(mode, true, "Consensus is not working status changed. "+error);      
+
+  });
+
+//   it(`(multiparty) cannot change status demands multiparty address`, async function () {
+
+//       let error;
+//       let mode = false;  
+//       try 
+//       {
+//         mode = await config.flightSuretyApp.isOperational.call();
+//         await config.flightSuretyApp.setOperatingStatus(false,{ from: config.owner });
+        
+//     }
+//     catch(e) {
+//         error = e;
+//     }
+//     assert.equal(mode, false, "Access not blocked for requireIsOperational "+error);      
+
+//     // Set it back for other tests to work
+//     //await config.flightSuretyData.setOperatingStatus(true);
+
+//   });
+
   it('(airline) cannot register an Airline using registerAirline() if it is not funded', async () => {
     
     // ARRANGE
@@ -110,7 +161,7 @@ contract('Flight Surety Tests', async (accounts) => {
     let registred = false;
     let error;
 
-         await config.flightSuretyApp.registerAirline.call("Avianca",config.testAddresses[2], { from: config.firstAirline })
+         await config.flightSuretyApp.registerAirline.call("Avianca",config.testAddresses[1], { from: config.firstAirline })
         .then((result)=>{
             registred = result;
         }).catch((e) => {
@@ -121,24 +172,24 @@ contract('Flight Surety Tests', async (accounts) => {
 
   });
 
-//   it(`can register the fifth airline calling registerAirline() `, async function () {
-//     // Ensure that register is false before call function
-//     let registred = false;
-//     let error;
+  it(`can register the fifth airline calling registerAirline() `, async function () {
+    // Ensure that register is false before call function
+    let registred = false;
+    let error;
 
-//     for(let i = 0; i>=5; i++){
-//         await config.flightSuretyApp.registerAirline.call("Avianca",config.testAddresses[2], { from: config.firstAirline })
-//        .then((result)=>{
-//            registred = result;
-//        }).catch((e) => {
-//            error = e;
-//        });
-//     }
+    for(let i = 0; i<=5; i++){
+        await config.flightSuretyApp.registerAirline.call("Avianca",config.testAddresses[i], { from: config.firstAirline })
+       .then((result)=>{
+           registred = result;
+       }).catch((e) => {
+           error = e;
+       });
+    }
 
 
-//     assert.equal(registred, true, "Airline was not registred "+error);
+    assert.equal(registred, true, "Airline was not registred "+error);
 
-//   });
+  });
 
 
  

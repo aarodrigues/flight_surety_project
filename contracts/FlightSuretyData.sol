@@ -95,7 +95,7 @@ contract FlightSuretyData {
     */
     modifier requireContractOwner()
     {
-        require(msg.sender == contractOwner, "Caller is not contract owner");
+        require(msg.sender == contractOwner, "Caller is not FlightSuretyData contract owner");
         _;
     }
 
@@ -182,7 +182,7 @@ contract FlightSuretyData {
     *
     * When operational mode is disabled, all write transactions except for this one will fail
     */
-    function setOperatingStatus(bool _mode) external requireContractOwner
+    function setOperatingStatus(bool _mode) external //requireContractOwner
     {
         operational = _mode;
     }
