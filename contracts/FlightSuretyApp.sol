@@ -99,9 +99,9 @@ contract FlightSuretyApp {
     * @dev Add an airline to the registration queue
     *
     */
-    function registerAirline(string _name, address _address, bool _aproved) external returns(bool success, uint256 votes)
+    function registerAirline(string _name, address _address) external returns(bool success, uint256 votes)
     {
-        return flightSuretyData.registerAirline(_name,_address,_aproved);
+        return flightSuretyData.registerAirline(_name,_address,true);
     }
 
 

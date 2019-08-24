@@ -28,12 +28,25 @@ import './flightsurety.css';
         
         // User-submitted transaction
         DOM.elid('register-airline').addEventListener('click', () => {
-            let airline = DOM.elid('airline-addr').value;
-            contract.registerAirline(airline,(error, result) => {
-                console.log(result);
+            //console.log("Register airline");
+             let airline_address = DOM.elid('airline-addr').value;
+             let airline_name = DOM.elid('airline-name').value;
+
+            contract.registerAirline(airline_name, airline_address,(resolve, reject) => {
+                console.log(resolve);
             });
-            DOM.elid('airline-addr').value = "";
-        })    
+            // DOM.elid('airline-addr').value = "";
+        })
+        
+        // User-submitted transaction
+        DOM.elid('fund-airline').addEventListener('click', () => {
+            console.log("Fund airline");
+            // let airline = DOM.elid('airline-addr').value;
+            // contract.registerAirline(airline,(error, result) => {
+            //     console.log(result);
+            // });
+            // DOM.elid('airline-addr').value = "";
+        }) 
 
         // // User-submitted transaction
         // DOM.elid('registerFlight').addEventListener('click', () => {

@@ -254,8 +254,8 @@ contract FlightSuretyData {
     *
     * @dev Airlines just get eligible when they pay the tax
     */
-    function registerAirline(string _name, address _address, bool _aproved) external requireIsOperational
-     requireIsRegistered(_address) requireIsConsensus(_address,_aproved) returns(bool, uint256)
+    function registerAirline(string _name, address _address, bool _vote) external requireIsOperational
+     requireIsRegistered(_address) requireIsConsensus(_address,_vote) returns(bool, uint256)
     {
         airlines[_address] = Airline({
             airlineName: _name,
