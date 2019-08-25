@@ -152,7 +152,7 @@ contract FlightSuretyApp {
                 break;
             }
         }
-        require(!isDuplicate, "Airline was already registered.");
+        require(!isDuplicate, "Address was already registered.");
 
         _addrs.push(_sender);
 

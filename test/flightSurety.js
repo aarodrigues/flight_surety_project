@@ -98,29 +98,30 @@ contract('Flight Surety Tests', async (accounts) => {
         error = e;
     }
 
-    assert.equal(mode, true, "Consensus is not working status changed. "+error);      
+    assert.equal(mode, true, "Consensus is not working, status changed. "+error);      
 
   });
 
-//   it(`(multiparty) cannot change status demands multiparty address`, async function () {
+  it(`(multiparty) can change status with consensus equal 2 (OPERATIONAL_STATUS_CONSENSUS = 2)`, async function () {
 
-//       let error;
-//       let mode = false;  
-//       try 
-//       {
-//         mode = await config.flightSuretyApp.isOperational.call();
-//         await config.flightSuretyApp.setOperatingStatus(false,{ from: config.owner });
-        
-//     }
-//     catch(e) {
-//         error = e;
-//     }
-//     assert.equal(mode, false, "Access not blocked for requireIsOperational "+error);      
+    let error;
+    let mode = true;  
+    try 
+    {
+        for(let i = 3; i< 4; i++){
+            await config.flightSuretyApp.setOperatingStatus(false,{ from: accounts[i] });
+        }
+        mode = await config.flightSuretyApp.isOperational.call();
+    }
+    catch(e) {
+        error = e;
+    }
+    assert.equal(mode, false, "Consensus to contract status is not work "+error);      
 
-//     // Set it back for other tests to work
-//     //await config.flightSuretyData.setOperatingStatus(true);
+    // Set it back for other tests to work
+    await config.flightSuretyData.setOperatingStatus(true);
 
-//   });
+  });
 
   it('(airline) cannot register an Airline using registerAirline() if it is not funded', async () => {
     
