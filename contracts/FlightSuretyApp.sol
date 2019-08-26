@@ -30,13 +30,13 @@ contract FlightSuretyApp {
 
 // consensus variables ------------
     struct Vote {
-        uint256 approved;
+        uint256 numberVotes;
         address[] airlinesVoter;
     }
 
     address[] multiCalls = new address[](0);
     uint constant OPERATIONAL_STATUS_CONSENSUS = 2;
-    uint public constant APROVE_AIRLINE_CONSENSUS = 4;
+    uint public constant APROVE_AIRLINE_CONSENSUS = 2;
     address[] airlinesAddrs = new address[](0);
     mapping(address => Vote) votes;
 
@@ -128,6 +128,7 @@ contract FlightSuretyApp {
     */
     function registerAirline(string _name, address _address) external requireIsRegistered(msg.sender) returns(bool)
     {
+        approveAirlineRegistration(_address, msg.sender);
         return flightSuretyData.registerAirline(_name,_address);
     }
 
@@ -164,21 +165,37 @@ contract FlightSuretyApp {
     }
 
 
-    function approveAirlineRegistration(address _airlineAddress, bool _vote) internal {
+    function approveAirlineRegistration(address _airlineAddress, address _sender) internal {
         bool consensus;
-        (airlinesAddrs, consensus) = multiPartyConsensus(votes[_airlineAddress].airlinesVoter,msg.sender, APROVE_AIRLINE_CONSENSUS);
+        (airlinesAddrs, consensus) = multiPartyConsensus(votes[_airlineAddress].airlinesVoter,_sender, APROVE_AIRLINE_CONSENSUS);
 
-        if(_vote){
-            votes[_airlineAddress].approved = votes[_airlineAddress].approved.add(1);
-        }
+        votes[_airlineAddress].numberVotes = votes[_airlineAddress].numberVotes.add(1);
+
+        flightSuretyData.setConsensus(true);
         if (consensus) {
-            if(votes[_airlineAddress].approved < votes[_airlineAddress].airlinesVoter.length.div(2))
+            if(votes[_airlineAddress].numberVotes < airlinesAddrs.length.div(2))
                 flightSuretyData.setConsensus(false);
             else
                 delete votes[_airlineAddress];
         }
-        flightSuretyData.setConsensus(true);
     }
+
+
+    // function approveAirlineRegistration(address _airlineAddress, bool _vote) internal {
+    //     bool consensus;
+    //     (airlinesAddrs, consensus) = multiPartyConsensus(votes[_airlineAddress].airlinesVoter,msg.sender, APROVE_AIRLINE_CONSENSUS);
+
+    //     if(_vote){
+    //         votes[_airlineAddress].approved = votes[_airlineAddress].approved.add(1);
+    //     }
+    //     if (consensus) {
+    //         if(votes[_airlineAddress].approved < votes[_airlineAddress].airlinesVoter.length.div(2))
+    //             flightSuretyData.setConsensus(false);
+    //         else
+    //             delete votes[_airlineAddress];
+    //     }
+    //     flightSuretyData.setConsensus(true);
+    // }
 
 
 
