@@ -26,7 +26,7 @@ contract FlightSuretyApp {
 
     address private contractOwner;          // Account used to deploy contract
     FlightSuretyData flightSuretyData;
-
+    bool private operational = true;
 
 // consensus variables ------------
     struct Vote {
@@ -113,7 +113,7 @@ contract FlightSuretyApp {
 
     function isOperational() public view returns(bool)
     {
-        return flightSuretyData.isOperational();  // Modify to call data contract's status
+        return operational; //flightSuretyData.isOperational();  // Modify to call data contract's status
     }
 
     /********************************************************************************************/
@@ -140,7 +140,8 @@ contract FlightSuretyApp {
         (multiCalls, statusConsensus) = multiPartyConsensus(multiCalls, msg.sender, OPERATIONAL_STATUS_CONSENSUS);
 
         if (statusConsensus) {
-            flightSuretyData.setOperatingStatus(_mode);
+            //flightSuretyData.setOperatingStatus(_mode);
+            operational = _mode;
             multiCalls = new address[](0);
         }
     }
