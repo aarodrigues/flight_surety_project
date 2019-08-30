@@ -135,7 +135,7 @@ contract('Flight Surety Tests', async (accounts) => {
     catch(e) {
 
     }
-    let result = await config.flightSuretyData.isAirlineRegistered.call(newAirline); 
+    let result = await config.flightSuretyData.isAirlineCompletelyRegistered.call(newAirline); 
 
     // ASSERT
     assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding");
@@ -169,7 +169,7 @@ contract('Flight Surety Tests', async (accounts) => {
             error = e;
         });
 
-    assert.equal(registred, true, "Airline was not registred "+error);
+    assert.equal(registred, true, "Airline was not registered "+error);
 
   });
 

@@ -19,6 +19,7 @@ contract FlightSuretyData {
         string airlineName;
         bool isRegistered;
         address account;
+        bool isFunded;
     }
 
     struct Passenger {
@@ -69,7 +70,8 @@ contract FlightSuretyData {
         airlines[_firstAirline] = Airline({
             airlineName: "First Airline",
             isRegistered: true,
-            account: _firstAirline
+            account: _firstAirline,
+            isFunded: true
         });
         authorizedContracts[contractOwner] = true;
         emit RegisterAirline(_firstAirline);
@@ -153,6 +155,11 @@ contract FlightSuretyData {
         _;
     }
 
+    modifier requireAirlineNotRegistered(address _airline){
+        require(!airlines[_airline].isRegistered,"It is not possible register the same airline twice");
+        _;
+    }
+
     /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
     /********************************************************************************************/
@@ -172,9 +179,14 @@ contract FlightSuretyData {
     *
     * @return If airline is registred
     */
-    function isAirlineRegistered(address _airlineAddress) public view returns(bool)
+    function isAirlineCompletelyRegistered(address _airlineAddress) public view returns(bool)
     {
-        return airlines[_airlineAddress].isRegistered;
+        return airlines[_airlineAddress].isRegistered && airlines[_airlineAddress].isFunded;
+    }
+
+    function isAirlineFunded(address _airlineAddress) public view returns(bool)
+    {
+        return airlines[_airlineAddress].isFunded;
     }
 
     /**
@@ -216,12 +228,13 @@ contract FlightSuretyData {
     * @dev Airlines just get eligible when they pay the tax
     */
     function registerAirline(string _name, address _address) external requireIsOperational
-     requireIsConsensus() returns(bool)
+     requireIsConsensus() requireAirlineNotRegistered(_address)  returns(bool)
     {
         airlines[_address] = Airline({
             airlineName: _name,
-            isRegistered: false,
-            account: _address
+            isRegistered: true,
+            account: _address,
+            isFunded: false
         });
 
         return true;

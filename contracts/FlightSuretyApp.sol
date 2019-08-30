@@ -85,9 +85,9 @@ contract FlightSuretyApp {
     /**
     * @dev Modifier that requires the msg.sender is into "authorizedContracts"
     */
-    modifier requireIsRegistered(address _address)
+    modifier requireIsCompletelyRegistered(address _address)
     {
-        require(flightSuretyData.isAirlineRegistered(_address),"Airline is not registrated.");
+        require(flightSuretyData.isAirlineCompletelyRegistered(_address),"Airline is not registrated.");
         _;
     }
 
@@ -126,7 +126,7 @@ contract FlightSuretyApp {
     * @dev Add an airline to the registration queue
     *
     */
-    function registerAirline(string _name, address _address) external requireIsRegistered(msg.sender) returns(bool)
+    function registerAirline(string _name, address _address) external requireIsCompletelyRegistered(msg.sender) returns(bool)
     {
         approveAirlineRegistration(_address, msg.sender);
         return flightSuretyData.registerAirline(_name,_address);
@@ -167,8 +167,10 @@ contract FlightSuretyApp {
 
 
     function approveAirlineRegistration(address _airlineAddress, address _sender) internal {
-        bool consensus;
-        (airlinesAddrs, consensus) = multiPartyConsensus(votes[_airlineAddress].airlinesVoter,_sender, APROVE_AIRLINE_CONSENSUS);
+        bool consensus = false;
+        if(airlinesAddrs.length > APROVE_AIRLINE_CONSENSUS){
+            (airlinesAddrs, consensus) = multiPartyConsensus(votes[_airlineAddress].airlinesVoter,_sender, APROVE_AIRLINE_CONSENSUS);
+        }
 
         votes[_airlineAddress].numberVotes = votes[_airlineAddress].numberVotes.add(1);
 
@@ -177,28 +179,9 @@ contract FlightSuretyApp {
             if(votes[_airlineAddress].numberVotes < airlinesAddrs.length.div(2))
                 flightSuretyData.setConsensus(false);
             else
-                delete votes[_airlineAddress];
+                delete votes[_airlineAddress]; //votes[_airlineAddress].airlinesVoter = new address[](0);
         }
     }
-
-
-    // function approveAirlineRegistration(address _airlineAddress, bool _vote) internal {
-    //     bool consensus;
-    //     (airlinesAddrs, consensus) = multiPartyConsensus(votes[_airlineAddress].airlinesVoter,msg.sender, APROVE_AIRLINE_CONSENSUS);
-
-    //     if(_vote){
-    //         votes[_airlineAddress].approved = votes[_airlineAddress].approved.add(1);
-    //     }
-    //     if (consensus) {
-    //         if(votes[_airlineAddress].approved < votes[_airlineAddress].airlinesVoter.length.div(2))
-    //             flightSuretyData.setConsensus(false);
-    //         else
-    //             delete votes[_airlineAddress];
-    //     }
-    //     flightSuretyData.setConsensus(true);
-    // }
-
-
 
 
    /**
@@ -413,7 +396,7 @@ contract FlightSuretyApp {
 /** Just external contract are visible from here */
 contract FlightSuretyData {
     function isOperational() public view returns(bool);
-    function isAirlineRegistered(address _airlineAddress) public view returns(bool);
+    function isAirlineCompletelyRegistered(address _airlineAddress) public view returns(bool);
     function setOperatingStatus(bool _mode) external;
     function setConsensus(bool _consensus) external;
     function registerAirline(string _name, address _address) external returns(bool);
