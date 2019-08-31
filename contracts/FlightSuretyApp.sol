@@ -257,7 +257,7 @@ contract FlightSuretyApp {
 // region ORACLE MANAGEMENT
 
     // Incremented to add pseudo-randomness at various points
-    uint8 private nonce = 0;    
+    uint8 private nonce = 0;
 
     // Fee to be paid when registering oracle
     uint256 public constant REGISTRATION_FEE = 1 ether;
@@ -268,7 +268,7 @@ contract FlightSuretyApp {
 
     struct Oracle {
         bool isRegistered;
-        uint8[3] indexes;        
+        uint8[3] indexes;
     }
 
     // Track all registered oracles
@@ -312,7 +312,7 @@ contract FlightSuretyApp {
                                     });
     }
 
-    function getMyIndexes() view external returns(uint8[3])
+    function getMyIndexes() external view returns(uint8[3])
     {
         require(oracles[msg.sender].isRegistered, "Not registered as an oracle");
 
@@ -331,7 +331,7 @@ contract FlightSuretyApp {
         require((oracles[msg.sender].indexes[0] == index) || (oracles[msg.sender].indexes[1] == index) || (oracles[msg.sender].indexes[2] == index), "Index does not match oracle request");
 
 
-        bytes32 key = keccak256(abi.encodePacked(index, airline, flight, timestamp)); 
+        bytes32 key = keccak256(abi.encodePacked(index, airline, flight, timestamp));
         require(oracleResponses[key].isOpen, "Flight or timestamp do not match oracle request");
 
         oracleResponses[key].responses[statusCode].push(msg.sender);
@@ -349,7 +349,7 @@ contract FlightSuretyApp {
     }
 
 
-    function getFlightKey(address airline,string flight,uint256 timestamp) pure internal returns(bytes32) 
+    function getFlightKey(address airline,string flight,uint256 timestamp) internal pure returns(bytes32)
     {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
@@ -404,6 +404,6 @@ contract FlightSuretyData {
     function creditInsurees(address _passenger, uint256 _value) external pure;
     function pay()external pure;
     function fund() public payable;
-    function getFlightKey(address airline,string memory flight,uint256 timestamp) pure internal returns(bytes32);
+    function getFlightKey(address airline,string memory flight,uint256 timestamp) internal pure returns(bytes32);
     function getInsuranceList(string _flightCode) external view returns(address[], uint256[]);
 }

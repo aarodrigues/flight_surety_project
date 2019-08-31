@@ -173,6 +173,8 @@ contract('Flight Surety Tests', async (accounts) => {
 
   });
 
+
+ // cannot call registeairline more than once
   it(`can register the fifth airline calling registerAirline() `, async function () {
     // Ensure that register is false before call function
     let registred = false;
@@ -187,10 +189,28 @@ contract('Flight Surety Tests', async (accounts) => {
        });
     }
 
-
     assert.equal(registred, true, "Airline was not registred "+error);
 
   });
+
+//   it(`cannot register the fifth and subsequent airline calling registerAirline() `, async function () {
+//     // Ensure that register is false before call function
+//     let registred = false;
+//     let error;
+
+//     await config.flightSuretyApp.registerAirline.call("Avianca",config.testAddresses[2], { from: config.firstAirline });
+//     await config.flightSuretyApp.registerAirline.call("Avianca",config.testAddresses[3], { from: config.firstAirline });
+//     await config.flightSuretyApp.registerAirline.call("Avianca",config.testAddresses[4], { from: config.firstAirline });
+//     await config.flightSuretyApp.registerAirline.call("Avianca",config.testAddresses[5], { from: config.firstAirline });
+
+//     await config.flightSuretyApp.registerAirline.call("Avianca",config.testAddresses[6], { from: config.firstAirline });
+       
+//     let s = await config.flightSuretyApp.getAirlineN.call();
+//     console.log("KKKKKKKKKKKKKKKKKKKKKKK "+s)
+
+//     assert.equal(registred, false, "Airline registered! "+error);
+
+//   });
 
 
  
