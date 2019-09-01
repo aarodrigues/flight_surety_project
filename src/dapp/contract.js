@@ -60,4 +60,23 @@ export default class Contract {
                 callback(error, payload);
             });
     }
+
+    setAirlineFund(airline, callback){
+        let self = this;
+        const amount = 10;
+        const amountToSend = this.web3.utils.toWei(amount.toString(), "ether");
+        self.flightSuretyApp.methods
+        .setAirlineFund(airline)
+        .send({from:self.owner,value: amountToSend}, callback);
+    }
+
+    buyInsurance(payment, flightCode, callback){
+        let self = this;
+        const amount = payment;
+        const amountToSend = this.web3.utils.toWei(amount.toString(), "ether");
+        self.flightSuretyApp.methods
+        // .buy(this.web3.utils.fromAscii("flight1"))
+        .buyInsurance(this.web3.utils.fromAscii(flightCode))
+        .send({ from: self.owner, value: amountToSend, gas: 1000000}, callback);
+    }
 }

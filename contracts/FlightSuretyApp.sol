@@ -27,6 +27,7 @@ contract FlightSuretyApp {
     address private contractOwner;          // Account used to deploy contract
     FlightSuretyData flightSuretyData;
     bool private operational = true;
+    uint256 constant INSURANCE_LIMIT = 1 ether;
 
 // consensus variables ------------
     struct Vote {
@@ -183,6 +184,10 @@ contract FlightSuretyApp {
         }
     }
 
+    function setAirlineFund(address _airline) external payable {
+        flightSuretyData.fund(_airline, msg.value);
+    }
+
 
    /**
     * @dev Register a future flight for insuring.
@@ -233,8 +238,18 @@ contract FlightSuretyApp {
 
     function buyInsurance(uint256 _payment, string _flightCode) external payable requireIsOperational()
     {
-        require(msg.value <= MAX_INSURANCE, "Passenger cannot pay more than 1 ether");
+        require(msg.value <= INSURANCE_LIMIT, "Passenger cannot pay more than 1 ether");
         flightSuretyData.buy(msg.sender, _flightCode, _payment);
+    }
+
+    function pay() external payable {
+        // uint funds  = flightSuretyData.getInsurancePayment(msg.sender);
+        // flightSuretyData.substractBalance(funds);
+        // flightSuretyData.pay(msg.sender, funds.mul(3).div(2));
+    }
+
+    function getInsuranceList(string _flightCode) external view returns (address[], uint[]){
+        return flightSuretyData.getInsuranceList(_flightCode);
     }
 
 
@@ -403,7 +418,7 @@ contract FlightSuretyData {
     function buy(address _passengerAddr, string _flightCode, uint256 _payment) external payable;
     function creditInsurees(address _passenger, uint256 _value) external pure;
     function pay()external pure;
-    function fund() public payable;
+    function fund(address _airlineAddress, uint256  _value) public payable;
     function getFlightKey(address airline,string memory flight,uint256 timestamp) internal pure returns(bytes32);
     function getInsuranceList(string _flightCode) external view returns(address[], uint256[]);
 }

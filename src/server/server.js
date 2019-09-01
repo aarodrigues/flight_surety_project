@@ -10,6 +10,7 @@ web3.eth.defaultAccount = web3.eth.accounts[0];
 let flightSuretyApp = new web3.eth.Contract(FlightSuretyApp.abi, config.appAddress);
 
 const status = [20, 0, 10, 30, 40, 50];
+let oracles = [];
 
 const registerOracles = async () => {
   try {
@@ -45,6 +46,57 @@ flightSuretyApp.events.OracleRequest({
   }, function (error, event) {
     if (error) console.log(error)
     console.log(event)
+
+    let index = event.returnValues.index
+    let airline =  event.returnValues.airline
+    let flight = event.returnValues.flight
+    let timestamp = event.returnValues.timestamp
+    let found = false;
+
+    let flightCode = status[2];
+    let scheduledTime = (timestamp * 1000);
+    console.log(`Flight scheduled to: ${new Date(scheduledTime)}`);
+
+    console.log("Teste jaijaija "+index+" udhduhduhudhd "+ airline); 
+
+    if (scheduledTime < Date.now()) {
+      flightCode = status[0];
+    }
+
+  oracles.forEach((oracle, index) => {
+      if (found) {
+          return false;
+      }
+      for(let idx = 0; idx < 3; idx += 1) {
+          if (found) {
+              break;
+          }
+          if (flightCode.code === 20) {
+              console.log("WILL COVER USERS");
+              flightSuretyApp.methods.creditInsurees(
+                  accounts[index],
+                  flight
+              ).send({
+                  from: accounts[index]
+              }).then(result => {
+                  //console.log(result);
+                  console.log(`Flight ${flight} got covered and insured the users`);
+              }).catch(err => {
+                  console.log(err.message);
+              });
+          }
+          flightSuretyApp.methods.submitOracleResponse(
+              oracle[idx], airline, flight, timestamp, selectedCode.code
+          ).send({
+              from: accounts[index]
+          }).then(result => {
+              found = true;
+              console.log(`Oracle: ${oracle[idx]} responded from flight ${flight} with status ${selectedCode.code} - ${selectedCode.label}`);
+          }).catch(err => {
+              console.log(err.message);
+          });
+      }
+  });
 });
 
 
