@@ -267,14 +267,14 @@ contract FlightSuretyData {
      *  @dev Transfers eligible payout funds to insuree
      *
     */
-    function pay(address _account, uint256 _value) external payable requireIsOperational()
-        requireIsExternallyOwnedAccount() requireIsContractBalanceEnough(_value)
+    function pay(address _account) external payable requireIsOperational()
+        requireIsExternallyOwnedAccount() //requireIsContractBalanceEnough(_value)
     {
         uint256 amount = passengers[_account].indemnity;
-        uint256 balance = amount.sub(_value);
-        passengers[_account].indemnity = balance;
+        //uint256 balance = amount.sub(_value);
+        passengers[_account].indemnity = 0;
         passengers[_account].isIndemnified = true;
-        _account.transfer(_value);
+        _account.transfer(amount);
     }
 
    /**

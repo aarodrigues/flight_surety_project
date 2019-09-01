@@ -209,7 +209,7 @@ contract FlightSuretyApp {
     function calculeIndemnity(uint256 _value) internal pure returns(uint256)
     {
         uint amount = _value;
-        amount = amount.div(2);
+        amount = amount.mul(3).div(2);
         uint indemnity = _value.add(amount);
         return indemnity;
     }
