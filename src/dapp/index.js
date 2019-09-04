@@ -17,14 +17,14 @@ import './flightsurety.css';
         });
     
 
-        // User-submitted transaction
-        DOM.elid('submit-oracle').addEventListener('click', () => {
-            let flight = DOM.elid('flight-number').value;
-            // Write transaction
-            contract.fetchFlightStatus(flight, (error, result) => {
-                display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: result.flight + ' ' + result.timestamp} ]);
-            });
-        })
+        // // User-submitted transaction
+        // DOM.elid('submit-oracle').addEventListener('click', () => {
+        //     let flight = DOM.elid('flight-number').value;
+        //     // Write transaction
+        //     contract.fetchFlightStatus(flight, (error, result) => {
+        //         display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: result.flight + ' ' + result.timestamp} ]);
+        //     });
+        // })
         
         // User-submitted transaction
         DOM.elid('register-airline').addEventListener('click', () => {
@@ -35,7 +35,11 @@ import './flightsurety.css';
             contract.registerAirline(airline_name, airline_address,(resolve, reject) => {
                 console.log(resolve);
             });
-            // DOM.elid('airline-addr').value = "";
+            DOM.elid('airline-addr').value = "";
+            DOM.elid('airline-name').value = "";
+            let langArray = ['Coisinho', 'hahaha',airline_name]
+
+            //loadSelect(langArray);
         })
         
         // User-submitted transaction
@@ -114,6 +118,20 @@ import './flightsurety.css';
     
 
 })();
+
+function loadSelect(langArray){
+    
+            for(let index in langArray)
+            {
+                var opt = document.createElement("option");
+                opt.value= index;
+                opt.innerHTML = langArray[index]; // whatever property it has
+
+                // then append it to the select element
+                document.getElementById('airline-select').appendChild(opt);
+            }
+            console.log("Register airline");
+}
 
 
 function display(title, description, results) {

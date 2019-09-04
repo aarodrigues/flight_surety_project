@@ -39,4 +39,17 @@ label.form {
 }
 input {
     margin-right: 30px;
+    margin-left: 20px;
+}
+
+select {
+    margin-left: 48px;
+}
+
+#flight-number{
+    margin-left: 58px;
+}
+
+#airline-addr{
+    margin-left: 0px;
 }

@@ -24,19 +24,20 @@
         <div id="display-wrapper" class="top-20">
         </div>
         <div class="row top-20">
-            <label class="form">Flight</label> <input type="text" id="flight-number"> <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
+            <label class="form">Flight:</label> <input type="text" id="flight-number"> <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
         </div>
 
         <div class="row top-20">
-            <label class="form"><strong>Register Airline:</strong></label>
+            <label class="form">Airline Address:</label>
             <input type="text" id="airline-addr">
-            <label class="form"><strong>Airline Name:</strong></label>
+            <label class="form">Airline Name: </label>
             <input type="text" id="airline-name">
             <btn class="btn btn-primary" id="register-airline">Register Airline</btn>
         </div>
 
-        <div>
-            <select name = "dropdown">
+        <div class="row top-20">
+            <label class="form">Airlines:</label>
+            <select name = "dropdown" id = "airline-select" >
                 <option value = "1" selected>Latam</option>
                 <option value = "2">American Airlines</option>
                 <option value = "3">Gol</option>
@@ -44,7 +45,7 @@
         </div>
 
         <div class="row top-20">
-            <label class="form"><strong>Fund Airline:</strong></label>
+            <label class="form">Fund Airline:</label>
             <input type="text" id="fund-airline-value">
             <btn class="btn btn-primary" id="fund-airline">Fund Airline</btn>
         </div>
