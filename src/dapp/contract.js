@@ -40,9 +40,9 @@ export default class Contract {
             .call({ from: self.owner}, callback);
     }
 
-    async registerAirline(adress, name, callback){
+    registerAirline(address, name, callback){
         let self = this;
-        await self.flightSuretyApp.methods.registerAirline(adress, name).send({ from: self.owner}, (resolve, reject) => {
+        self.flightSuretyApp.methods.registerAirline(address, name).send({ from:self.airlines[0]},  (resolve, reject) => {
                 callback(resolve, reject);
             });
     }
@@ -61,13 +61,21 @@ export default class Contract {
             });
     }
 
-    setAirlineFund(airline, callback){
+    setAirlineFund(airline,value, callback){
         let self = this;
-        const amount = 10;
+        const amount = value;
         const amountToSend = this.web3.utils.toWei(amount.toString(), "ether");
         self.flightSuretyApp.methods
         .setAirlineFund(airline)
         .send({from:self.owner,value: amountToSend}, callback);
+    }
+
+    registerFlight(airline, code, callback) {
+        let self = this;
+        let time = Number(Math.floor(Date.now() / 1000));
+        self.flightSuretyApp.methods     
+        .registerFlight(airline,this.web3.utils.fromAscii(code), time)
+        .send({ from: self.owner, gas: 1000000}, callback);    
     }
 
     buyInsurance(payment, flightCode, callback){
@@ -79,4 +87,5 @@ export default class Contract {
         .buyInsurance(this.web3.utils.fromAscii(flightCode))
         .send({ from: self.owner, value: amountToSend, gas: 1000000}, callback);
     }
+
 }

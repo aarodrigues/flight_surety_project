@@ -15,7 +15,6 @@ import './flightsurety.css';
             console.log(error,result);
             display('Operational Status', 'Check if contract is operational', [ { label: 'Operational Status', error: error, value: result} ]);
         });
-    
 
         // // User-submitted transaction
         // DOM.elid('submit-oracle').addEventListener('click', () => {
@@ -29,27 +28,49 @@ import './flightsurety.css';
         // User-submitted transaction
         DOM.elid('register-airline').addEventListener('click', () => {
             //console.log("Register airline");
-             let airline_address = DOM.elid('airline-addr').value;
-             let airline_name = DOM.elid('airline-name').value;
 
-            contract.registerAirline(airline_name, airline_address,(resolve, reject) => {
-                console.log(resolve);
+            let airline = DOM.elid('airline-select');
+            let id  = airline.options[airline.selectedIndex].value;
+            let name = airline.options[airline.selectedIndex].text;
+            let addr = defaultAirlinesAddress(id)
+            console.log(id);
+            console.log(name);
+            console.log(addr);
+            contract.registerAirline(name, addr,(resolve, reject) => {
+                    console.log(resolve);
             });
-            DOM.elid('airline-addr').value = "";
-            DOM.elid('airline-name').value = "";
-            let langArray = ['Coisinho', 'hahaha',airline_name]
-
-            //loadSelect(langArray);
         })
         
         // User-submitted transaction
         DOM.elid('fund-airline').addEventListener('click', () => {
             console.log("Fund airline");
-            // let airline = DOM.elid('airline-addr').value;
+            let airline = DOM.elid('airline-select');
+            let id  = airline.options[airline.selectedIndex].value;
+            let addr = defaultAirlinesAddress(id)
+            console.log(addr);
+            let value = DOM.elid('fund-airline-value').value;
+            console.log(value);
+            contract.setAirlineFund(addr,value,(resolve, reject) => {
+                console.log(resolve);
+            });
             // contract.registerAirline(airline,(error, result) => {
             //     console.log(result);
             // });
-            // DOM.elid('airline-addr').value = "";
+            //DOM.elid('airline-addr').value = "";
+        }) 
+
+
+        DOM.elid('register-flight').addEventListener('click', () => {
+            console.log("register-flight");
+            let flight = DOM.elid('flight-select');
+            let id  = flight.options[flight.selectedIndex].value;
+            let code  = flight.options[flight.selectedIndex].text;
+            let addr = getAirlinesAddress(id)
+            console.log(addr+" jsijsijsijs "+ code);
+            contract.registerFlight(addr,code, (error, result) => {
+                    console.log(result);
+            });
+            
         }) 
 
         // // User-submitted transaction
@@ -118,6 +139,50 @@ import './flightsurety.css';
     
 
 })();
+
+
+function defaultAirlinesAddress(id){
+    let address;
+    switch (id) {
+        case '1':
+            address = "0xcbd22ff1ded1423fbc24a7af2148745878800024";
+            break;
+        case '2':
+            address =  "0xc257274276a4e539741ca11b590b9447b26a8051";
+            break
+        case '3':
+            address = "0x2f2899d6d35b1a48a4fbdc93a37a72f264a9fca7";
+        default:
+            break;
+    }
+    return address;
+}
+
+function getAirlinesAddress(id){
+    let address;
+    if(id == '1' || id == '2')
+        address = "0xcbd22ff1ded1423fbc24a7af2148745878800024";
+    if(id == '3' || id == '4')
+        address =  "0xc257274276a4e539741ca11b590b9447b26a8051";    
+    else
+        address = "0x2f2899d6d35b1a48a4fbdc93a37a72f264a9fca7";
+    return address;
+}
+
+function createFlights(){
+    let flights = ['LAT218', 'G400', 'G876','AA87']
+
+    for(let index in flights)
+            {
+                var opt = document.createElement("option");
+                opt.value= index;
+                opt.innerHTML = langArray[index]; // whatever property it has
+
+                // then append it to the select element
+                document.getElementById('flight-select').appendChild(opt);
+            }
+            console.log("Register airline");
+}
 
 function loadSelect(langArray){
     

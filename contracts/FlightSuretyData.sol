@@ -122,9 +122,9 @@ contract FlightSuretyData {
     /**
     * @dev Modifier verify the price sent
     */
-    modifier requirePaidEnough(uint _price)
+    modifier requirePaidEnough(uint _value)
     {
-        require(msg.value >= _price,"Value sent is not enough");
+        require(_value >= FUND_VALUE,"Value sent is not enough");
         _;
     }
 
@@ -157,6 +157,7 @@ contract FlightSuretyData {
 
     modifier requireAirlineNotRegistered(address _airline){
         require(!airlines[_airline].isRegistered,"It is not possible register the same airline twice");
+        // require(true,"It is not possible register the same airline twice");
         _;
     }
 
@@ -227,8 +228,8 @@ contract FlightSuretyData {
     *
     * @dev Airlines just get eligible when they pay the tax
     */
-    function registerAirline(string _name, address _address) external requireIsOperational
-     requireIsConsensus() requireAirlineNotRegistered(_address)  returns(bool)
+    function registerAirline(string _name, address _address) external requireIsOperational returns(bool)
+    //  requireIsConsensus() requireAirlineNotRegistered(_address)  returns(bool)
     {
         airlines[_address] = Airline({
             airlineName: _name,
@@ -282,7 +283,7 @@ contract FlightSuretyData {
     *      resulting in insurance payouts, the contract should be self-sustaining
     *
     */
-    function fund(address _airlineAddress, uint256  _value) public payable requireIsOperational requirePaidEnough(FUND_VALUE)
+    function fund(address _airlineAddress, uint256  _value) public payable requireIsOperational requirePaidEnough(_value)
     {
         airlines[_airlineAddress].isRegistered = true;
         flightSuretyBalance = flightSuretyBalance.add(_value);
