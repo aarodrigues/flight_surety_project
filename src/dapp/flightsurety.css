@@ -52,6 +52,12 @@ select {
     margin-left: 58px;
 }
 
-#airline-addr{
-    margin-left: 0px;
+
+#buy-insurance-select{
+     width: 80px;
+     margin-right: 0px
+}
+
+#flight-insurance{
+    width: 130px
 }

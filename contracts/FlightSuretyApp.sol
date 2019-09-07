@@ -236,10 +236,10 @@ contract FlightSuretyApp {
         }
     }
 
-    function buyInsurance(uint256 _payment, string _flightCode) external payable requireIsOperational()
+    function buyInsurance(string _flightCode) external payable requireIsOperational()
     {
         require(msg.value <= INSURANCE_LIMIT, "Passenger cannot pay more than 1 ether");
-        flightSuretyData.buy(msg.sender, _flightCode, _payment);
+        flightSuretyData.buy(msg.sender, _flightCode, msg.value);
     }
 
     function pay() external payable {

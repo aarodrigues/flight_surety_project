@@ -78,12 +78,11 @@ export default class Contract {
         .send({ from: self.owner, gas: 1000000}, callback);    
     }
 
-    buyInsurance(payment, flightCode, callback){
+    buyInsurance(flightCode, payment, callback){
         let self = this;
         const amount = payment;
         const amountToSend = this.web3.utils.toWei(amount.toString(), "ether");
         self.flightSuretyApp.methods
-        // .buy(this.web3.utils.fromAscii("flight1"))
         .buyInsurance(this.web3.utils.fromAscii(flightCode))
         .send({ from: self.owner, value: amountToSend, gas: 1000000}, callback);
     }

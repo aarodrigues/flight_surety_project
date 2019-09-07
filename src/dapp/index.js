@@ -73,6 +73,18 @@ import './flightsurety.css';
             
         }) 
 
+        // User-submitted transaction
+        DOM.elid('buy-insurance').addEventListener('click', () => {
+            console.log("coisinha")
+            let insuranceValue = DOM.elid('flight-insurance').value;
+            let flight = DOM.elid('buy-insurance-select');
+            let code  = flight.options[flight.selectedIndex].text;
+            console.log(" juajaiaji "+code+" isjksooa"+insuranceValue)
+            contract.buyInsurance(code,insuranceValue,(error, result) => {
+                console.log(result);
+            });
+        })  
+
         // // User-submitted transaction
         // DOM.elid('registerFlight').addEventListener('click', () => {
         //     let flight = DOM.elid('dropDownFlights_register').value;
@@ -96,14 +108,7 @@ import './flightsurety.css';
         //     });
         // })  
 
-        // // User-submitted transaction
-        // DOM.elid('buyInsurance').addEventListener('click', () => {            
-        //     let insuranceValue = DOM.elid('insuranceValue').value;
-        //     let flight = DOM.elid('dropDownFlights_buyInsurance').value;            
-        //     contract.buyInsurace(flight,insuranceValue,(error, result) => {
-        //         console.log(result);
-        //     });
-        // })  
+        
 
         // // User-submitted transaction
         // DOM.elid('showCreditBalance').addEventListener('click', () => {
