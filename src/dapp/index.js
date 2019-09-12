@@ -83,7 +83,23 @@ import './flightsurety.css';
             contract.buyInsurance(code,insuranceValue,(error, result) => {
                 console.log(result);
             });
+        }) 
+
+        // User-submitted transaction
+        DOM.elid('update-status').addEventListener('click', () => {
+            console.log("update")
+            let flight = DOM.elid('flight-status-select');
+            let id  = flight.options[flight.selectedIndex].value;
+            let code  = flight.options[flight.selectedIndex].text;
+            let time = Number(Math.floor(Date.now() / 1000));
+            let address = getAirlinesAddress(id)
+            console.log(" jsijsijsijs "+ code);
+            contract.fetchFlightStatus({address: address, flight: code, time: time}, (error, result) => {
+                display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: result.flight + ' was succesfully submitted.'} ]);
+            });
+            
         })  
+
 
         // // User-submitted transaction
         // DOM.elid('registerFlight').addEventListener('click', () => {

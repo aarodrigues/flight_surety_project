@@ -47,20 +47,6 @@ export default class Contract {
             });
     }
 
-    fetchFlightStatus(flight, callback) {
-        let self = this;
-        let payload = {
-            airline: self.airlines[0],
-            flight: flight,
-            timestamp: Math.floor(Date.now() / 1000)
-        } 
-        self.flightSuretyApp.methods
-            .fetchFlightStatus(payload.airline, payload.flight, payload.timestamp)
-            .send({ from: self.owner}, (error, result) => {
-                callback(error, payload);
-            });
-    }
-
     setAirlineFund(airline,value, callback){
         let self = this;
         const amount = value;
@@ -85,6 +71,15 @@ export default class Contract {
         self.flightSuretyApp.methods
         .buyInsurance(this.web3.utils.fromAscii(flightCode))
         .send({ from: self.owner, value: amountToSend, gas: 1000000}, callback);
+    }
+
+    fetchFlightStatus(payload, callback) {
+        let self = this;
+        self.flightSuretyApp.methods
+            .fetchFlightStatus(payload.address, payload.flight, payload.time)
+            .send({ from: self.owner}, (error, result) => {
+                callback(error, payload);
+            });
     }
 
 }

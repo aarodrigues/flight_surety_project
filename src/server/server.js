@@ -35,6 +35,7 @@ const registerOracles = async () => {
         let indexes = await flightSuretyApp.methods.getMyIndexes.call({from: account});
         //console.log(indexes);
         console.log(`Oracle ${account} registered: ${indexes[0]}, ${indexes[1]}, ${indexes[2]}`);
+        oracles.push(account);
       });
   } catch (error){
       console.log('Unable to register all 20 initial oracles. (Maybe oracle already exists?)');
@@ -57,13 +58,14 @@ flightSuretyApp.events.OracleRequest({
     let scheduledTime = (timestamp * 1000);
     console.log(`Flight scheduled to: ${new Date(scheduledTime)}`);
 
-    console.log("Teste jaijaija "+index+" udhduhduhudhd "+ airline); 
+    console.log("Teste jaijaija "+index+" udhduhduhudhd "+ airline+" koko "+flight);
 
     if (scheduledTime < Date.now()) {
       flightCode = status[0];
     }
 
-  oracles.forEach((oracle, index) => {
+    oracles.forEach((oracle, index) => {
+        console.log("I am here")
       if (found) {
           return false;
       }
@@ -71,22 +73,12 @@ flightSuretyApp.events.OracleRequest({
           if (found) {
               break;
           }
-          if (flightCode.code === 20) {
+          if (flightCode === 20) {
               console.log("WILL COVER USERS");
-              flightSuretyApp.methods.creditInsurees(
-                  accounts[index],
-                  flight
-              ).send({
-                  from: accounts[index]
-              }).then(result => {
-                  //console.log(result);
-                  console.log(`Flight ${flight} got covered and insured the users`);
-              }).catch(err => {
-                  console.log(err.message);
-              });
+            
           }
           flightSuretyApp.methods.submitOracleResponse(
-              oracle[idx], airline, flight, timestamp, selectedCode.code
+              oracle[idx], airline, flight, timestamp, flightCode
           ).send({
               from: accounts[index]
           }).then(result => {
@@ -95,8 +87,8 @@ flightSuretyApp.events.OracleRequest({
           }).catch(err => {
               console.log(err.message);
           });
-      }
-  });
+       }
+    });
 });
 
 
