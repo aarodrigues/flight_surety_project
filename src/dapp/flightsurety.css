@@ -61,3 +61,21 @@ select {
 #flight-insurance{
     width: 130px
 }
+
+#contract-balance-value{
+    margin-left: 40px;
+}
+
+#fund-airline-value{
+    width: 110px;
+}
+
+#ether{
+    vertical-align:middle;
+    margin-right: 35px;
+    margin-top: 8px;
+}
+
+#flight-select{
+    margin-left: 40px;
+}

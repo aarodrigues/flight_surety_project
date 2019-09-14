@@ -100,6 +100,17 @@ import './flightsurety.css';
             
         })  
 
+        DOM.elid('bt-contract-balance').addEventListener('click', () => {
+            console.log("get contract balance")
+            let balance = DOM.elid('contract-balance-value');
+            balance.value = 'teste';
+            contract.getContractBalance((error, result) => {
+                console.log(result);
+                balance.value = result;
+            });
+            
+        }) 
+
 
         // // User-submitted transaction
         // DOM.elid('registerFlight').addEventListener('click', () => {

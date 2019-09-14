@@ -254,6 +254,10 @@ contract FlightSuretyData {
         flightSuretyBalance = flightSuretyBalance.add(_payment);
     }
 
+    function getContractBalance() external view requireIsOperational() returns (uint256){
+        return flightSuretyBalance;
+    }
+
     /**
      *  @dev Credits payouts to insurees
     */

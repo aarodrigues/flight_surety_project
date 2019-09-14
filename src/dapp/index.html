@@ -36,16 +36,17 @@
         
         <div class="row top-20">
             <label class="form">Fund Airline:</label>
-            <input type="text" id="fund-airline-value" value="10">
+            <input type="number" steps="any" id="fund-airline-value" value="10">
+            <div id="ether">Ether Value</div>
             <btn class="btn btn-primary" id="fund-airline">Fund Airline</btn>
         </div>
         
-        <div class="row top-20">
+        <!-- <div class="row top-20">
             <label class="form">Flight:</label> <input type="text" id="flight-number"> <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
-        </div>
+        </div> -->
 
         <div class="row top-20">
-                <label class="form">Flights:</label>
+                <label class="form">Register:</label>
                 <select name = "dropdown" id = "flight-select" >
                     <option value = "1" selected>LAT452</option>
                     <option value = "2">LAT218</option>
@@ -67,7 +68,13 @@
                 </select>
                 <input type="number" steps="any" id="flight-insurance" placeholder=" Value in Ether"> 
                 <btn class="btn btn-primary" id="buy-insurance">Buy Insurance</btn>
-            </div>
+        </div>
+
+        <div class="row top-20">
+                <label class="form">Balance:</label>
+                <input type="text" id="contract-balance-value" placeholder=" Contract value in wei" disabled>
+                <btn class="btn btn-primary" id="bt-contract-balance">Contract Balance</btn>
+        </div>
 
             <div class="row top-20">
                     <label class="form">Status:</label>

@@ -246,6 +246,10 @@ contract FlightSuretyApp {
         flightSuretyData.pay(msg.sender);
     }
 
+    function getContractBalance() external view requireIsOperational() returns(uint256){
+        return flightSuretyData.getContractBalance();
+    }
+
     function getInsuranceList(string _flightCode) external view returns (address[], uint[]){
         return flightSuretyData.getInsuranceList(_flightCode);
     }
@@ -414,6 +418,7 @@ contract FlightSuretyData {
     function setConsensus(bool _consensus) external;
     function registerAirline(string _name, address _address) external returns(bool);
     function buy(address _passengerAddr, string _flightCode, uint256 _payment) external payable;
+    function getContractBalance() external view returns(uint256);
     function creditInsurees(address _passenger, uint256 _value) external pure;
     function pay(address _account) external payable;
     function pay()external pure;

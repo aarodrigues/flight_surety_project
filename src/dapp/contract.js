@@ -73,6 +73,11 @@ export default class Contract {
         .send({ from: self.owner, value: amountToSend, gas: 1000000}, callback);
     }
 
+    getContractBalance(callback){
+        let self = this;
+        self.flightSuretyApp.methods.getContractBalance().call({ from: self.owner},callback);
+    }
+
     fetchFlightStatus(payload, callback) {
         let self = this;
         self.flightSuretyApp.methods
