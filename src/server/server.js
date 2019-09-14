@@ -9,33 +9,24 @@ let web3 = new Web3(new Web3.providers.WebsocketProvider(config.url.replace('htt
 web3.eth.defaultAccount = web3.eth.accounts[0];
 let flightSuretyApp = new web3.eth.Contract(FlightSuretyApp.abi, config.appAddress);
 
-const status = [20, 0, 10, 30, 40, 50];
-let oracles = [];
+const status = [0, 10, 20, 30, 40, 50];
+let oracles = new Map();
 
 const registerOracles = async () => {
   try {
       let accounts = await web3.eth.getAccounts();
       console.log(accounts);
       accounts.forEach(async account => {
-        new Promise((resolve, reject) => { 
-            flightSuretyApp.methods.registerOracle().send(
+           await flightSuretyApp.methods.registerOracle().send(
               {
                   from: account, 
                   value: web3.utils.toWei('1', 'ether'),
                   gas: 3000000
-                },
-                (error, result) => {
-                  if (error) 
-                    reject(error)
-                  else
-                    resolve(result)
-                }
-            );
-        });
-        let indexes = await flightSuretyApp.methods.getMyIndexes.call({from: account});
-        //console.log(indexes);
+                });
+        
+        let indexes = await flightSuretyApp.methods.getMyIndexes().call({from: account});
         console.log(`Oracle ${account} registered: ${indexes[0]}, ${indexes[1]}, ${indexes[2]}`);
-        oracles.push(account);
+        oracles.set(account, indexes);
       });
   } catch (error){
       console.log('Unable to register all 20 initial oracles. (Maybe oracle already exists?)');
@@ -48,47 +39,44 @@ flightSuretyApp.events.OracleRequest({
     if (error) console.log(error)
     console.log(event)
 
-    let index = event.returnValues.index
+    let indexFromEvent = event.returnValues.index
     let airline =  event.returnValues.airline
     let flight = event.returnValues.flight
     let timestamp = event.returnValues.timestamp
-    let found = false;
 
-    let flightCode = status[2];
+    let flightStatusCode = status[0];
     let scheduledTime = (timestamp * 1000);
     console.log(`Flight scheduled to: ${new Date(scheduledTime)}`);
 
-    console.log("Teste jaijaija "+index+" udhduhduhudhd "+ airline+" koko "+flight);
+    let approvedOracles = [];
 
-    if (scheduledTime < Date.now()) {
-      flightCode = status[0];
+    for (let [address, indexes] of oracles) {
+        indexes.forEach(index => {
+            if (index == indexFromEvent) {
+                approvedOracles.push(address);
+                console.log(indexFromEvent + '->' + address);
+            }
+        });
     }
 
-    oracles.forEach((oracle, index) => {
-        console.log("I am here")
-      if (found) {
-          return false;
-      }
-      for(let idx = 0; idx < 3; idx += 1) {
-          if (found) {
-              break;
-          }
-          if (flightCode === 20) {
-              console.log("WILL COVER USERS");
-            
-          }
-          flightSuretyApp.methods.submitOracleResponse(
-              oracle[idx], airline, flight, timestamp, flightCode
-          ).send({
-              from: accounts[index]
-          }).then(result => {
-              found = true;
-              console.log(`Oracle: ${oracle[idx]} responded from flight ${flight} with status ${selectedCode.code} - ${selectedCode.label}`);
-          }).catch(err => {
-              console.log(err.message);
-          });
-       }
+    if (scheduledTime < Date.now()) {
+      flightStatusCode = status[2];
+    }
+
+    approvedOracles.forEach(async(oracleAddress) => {
+
+         flightSuretyApp.methods.submitOracleResponse(indexFromEvent, airline, flight, timestamp, flightStatusCode)
+        .send({from: oracleAddress, gas: 500000})
+        .then(result => {
+            //console.log('Oracle works '+result);
+            console.log(`Oracle: ${oracleAddress} responded from flight ${flight} with status ${flightStatusCode}`);
+        }).catch(err => {
+            //console.log(err.message);
+            console.log(`oracle ${oracleAddress} was rejected while submitting oracle response with status statusCode ${flightStatusCode}`);
+        });
     });
+
+    
 });
 
 
