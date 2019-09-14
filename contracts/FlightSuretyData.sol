@@ -273,13 +273,15 @@ contract FlightSuretyData {
      *
     */
     function pay(address _account) external payable requireIsOperational()
-        requireIsExternallyOwnedAccount() //requireIsContractBalanceEnough(_value)
+        requireIsExternallyOwnedAccount() returns(uint256)//requireIsContractBalanceEnough(_value)
     {
         uint256 amount = passengers[_account].indemnity;
-        //uint256 balance = amount.sub(_value);
+        uint256 balance = flightSuretyBalance.sub(amount);
+        flightSuretyBalance = balance;
         passengers[_account].indemnity = 0;
         passengers[_account].isIndemnified = true;
         _account.transfer(amount);
+        return amount;
     }
 
    /**

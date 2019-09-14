@@ -66,7 +66,7 @@
                         <option value = "4">G876</option>
                         <option value = "5">AA87</option>
                 </select>
-                <input type="number" steps="any" id="flight-insurance" placeholder=" Value in Ether"> 
+                <input type="number" steps="any" min="0" id="flight-insurance" placeholder=" Value in Ether"> 
                 <btn class="btn btn-primary" id="buy-insurance">Buy Insurance</btn>
         </div>
 
@@ -86,6 +86,12 @@
                             <option value = "5">AA87</option>
                     </select>
                     <btn class="btn btn-primary" id="update-status">Update Flight Status</btn>
+            </div>
+
+            <div class="row top-20">
+                    <label class="form">Indemnity:</label>
+                    <input type="text" id="passenger-balance-value" placeholder=" Contract value in wei" disabled>
+                    <btn class="btn btn-primary" id="bt-passenger-indemnity">Request Payment</btn>
             </div>
         
 

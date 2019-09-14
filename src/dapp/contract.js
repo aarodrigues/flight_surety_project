@@ -87,4 +87,9 @@ export default class Contract {
             });
     }
 
+    pay(callback){
+        let self = this;
+        self.flightSuretyApp.methods.pay().call({ from: self.owner},callback);
+    }
+
 }

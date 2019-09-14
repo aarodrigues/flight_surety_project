@@ -75,14 +75,17 @@ import './flightsurety.css';
 
         // User-submitted transaction
         DOM.elid('buy-insurance').addEventListener('click', () => {
-            console.log("coisinha")
             let insuranceValue = DOM.elid('flight-insurance').value;
-            let flight = DOM.elid('buy-insurance-select');
-            let code  = flight.options[flight.selectedIndex].text;
-            console.log(" juajaiaji "+code+" isjksooa"+insuranceValue)
-            contract.buyInsurance(code,insuranceValue,(error, result) => {
-                console.log(result);
-            });
+            if(insuranceValue == '')
+                alert("Insurance value cannot be empty")
+            else{
+                let flight = DOM.elid('buy-insurance-select');
+                let code  = flight.options[flight.selectedIndex].text;
+                console.log(" Flight code: "+code+" Insurance value: "+insuranceValue)
+                contract.buyInsurance(code,insuranceValue,(error, result) => {
+                    console.log(result);
+                });
+            }
         }) 
 
         // User-submitted transaction
@@ -111,61 +114,15 @@ import './flightsurety.css';
             
         }) 
 
-
-        // // User-submitted transaction
-        // DOM.elid('registerFlight').addEventListener('click', () => {
-        //     let flight = DOM.elid('dropDownFlights_register').value;
-        //     contract.generateFlight(flight,(error, result) => {
-        //         console.log(result);
-        //     });
-        // })    
-
-        // // User-submitted transaction
-        // DOM.elid('isRegistered').addEventListener('click', () => {
-        //     let flight = DOM.elid('dropDownFlights_isRegistered').value;
-        //     contract.isFlightRegistered(flight,(error, result) => {
-        //         console.log(result);
-        //     });
-        // })  
-        
-        // // User-submitted transaction
-        // DOM.elid('fundAirline').addEventListener('click', () => {
-        //     contract.fundAirline((error, result) => {
-        //         console.log(result);
-        //     });
-        // })  
-
-        
-
-        // // User-submitted transaction
-        // DOM.elid('showCreditBalance').addEventListener('click', () => {
-        //     contract.returnCreditAmount((error, result) => {
-        //         console.log(result);
-        //     });
-        // }) 
-
-        // // User-submitted transaction
-        // DOM.elid('withdrawl').addEventListener('click', () => {
-        //     contract.payoutInsurance((error, result) => {
-        //         console.log(result);
-        //     });
-        // }) 
-
-        // // User-submitted transaction
-        // DOM.elid('fetchFlightStatus').addEventListener('click', () => {
-        //     let flight = DOM.elid('dropDownFlights_fetchFlight').value;   
-        //     contract.fetchFlightStatus(flight,(error, result) => {
-        //         console.log(result);
-        //     });
-        // }) 
-
-        // // User-submitted transaction
-        // DOM.elid('showUserBalance').addEventListener('click', () => {
-        //     contract.showUserBalance((error, result) => {
-        //         console.log(result);
-        //     });
-        // }) 
-
+        DOM.elid('bt-passenger-indemnity').addEventListener('click', () => {
+            console.log("get passenger balance")
+            let balance = DOM.elid('passenger-balance-value');
+            balance.value = 'teste 2';
+            contract.pay((error, result) => {
+                console.log(result);
+                balance.value = result;
+            });
+        }) 
     
     });
     

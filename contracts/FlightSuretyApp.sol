@@ -242,8 +242,8 @@ contract FlightSuretyApp {
         flightSuretyData.buy(msg.sender, _flightCode, msg.value);
     }
 
-    function pay() external payable {
-        flightSuretyData.pay(msg.sender);
+    function pay() external payable returns(uint256){
+        return flightSuretyData.pay(msg.sender);
     }
 
     function getContractBalance() external view requireIsOperational() returns(uint256){
@@ -420,7 +420,7 @@ contract FlightSuretyData {
     function buy(address _passengerAddr, string _flightCode, uint256 _payment) external payable;
     function getContractBalance() external view returns(uint256);
     function creditInsurees(address _passenger, uint256 _value) external pure;
-    function pay(address _account) external payable;
+    function pay(address _account) external payable returns(uint256);
     function pay()external pure;
     function fund(address _airlineAddress, uint256  _value) public payable;
     function getFlightKey(address airline,string memory flight,uint256 timestamp) internal pure returns(bytes32);

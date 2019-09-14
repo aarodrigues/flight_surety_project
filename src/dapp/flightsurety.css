@@ -79,3 +79,7 @@ select {
 #flight-select{
     margin-left: 40px;
 }
+
+#passenger-balance-value{
+    margin-left: 28px;
+}
