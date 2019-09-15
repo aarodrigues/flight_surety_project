@@ -32,18 +32,8 @@ contract FlightSuretyData {
 
     struct Insurance {
         address[] insuredPassengers;
-        uint[] insuraceValue;
+        mapping(address => uint256) insuraceValue;
     }
-
-
-    //deletar
-    struct Vote {
-        uint256 approved;
-        address[] airlinesVoter;
-    }
-    address[] multiCalls = new address[](0);
-    mapping(address => Vote) votes;
-    // ----------
 
     mapping(address => bool) authorizedContracts;
     mapping(address => Airline) airlines;
@@ -59,6 +49,7 @@ contract FlightSuretyData {
 
     event RegisterAirline(address account);
     event Funded();
+    event Transferred(uint256 amount);
 
     /**
     * @dev Constructor
@@ -249,8 +240,10 @@ contract FlightSuretyData {
     function buy(address _passengerAddr, string _flightCode, uint256 _payment) external payable requireIsOperational()
     {
         insurances[_flightCode].insuredPassengers.push(_passengerAddr);
-        insurances[_flightCode].insuraceValue.push(_payment);
-        passengers[_passengerAddr].insuraceValue = _payment;
+        uint256 paid = insurances[_flightCode].insuraceValue[_passengerAddr];
+        insurances[_flightCode].insuraceValue[_passengerAddr] = paid.add(_payment);
+        //passengers[_passengerAddr].insuraceValue = _payment;
+        passengers[_passengerAddr].isIndemnified = false;
         flightSuretyBalance = flightSuretyBalance.add(_payment);
     }
 
@@ -258,13 +251,20 @@ contract FlightSuretyData {
         return flightSuretyBalance;
     }
 
+    function getPassengerInsuracedValue(string _flightCode, address _passengerAddr) external view requireIsOperational() returns (uint256){
+        return insurances[_flightCode].insuraceValue[_passengerAddr];
+    }
+
     /**
      *  @dev Credits payouts to insurees
     */
-    function creditInsurees(address _passenger, uint256 _indemnity) external requireIsOperational()
+    function creditInsurees(string _flightCode, address _passenger, uint256 _indemnity) external requireIsOperational()
     {
-        passengers[_passenger].indemnity = passengers[_passenger].indemnity.add(_indemnity);
-        passengers[_passenger].isIndemnified = true;
+        uint256 amount = 0; //passengers[_passenger].indemnity;
+        passengers[_passenger].indemnity = amount.add(_indemnity);
+        if(passengers[_passenger].isIndemnified == true){
+            insurances[_flightCode].insuraceValue[_passenger] = 0;
+        }
     }
 
 
@@ -273,15 +273,18 @@ contract FlightSuretyData {
      *
     */
     function pay(address _account) external payable requireIsOperational()
-        requireIsExternallyOwnedAccount() returns(uint256)//requireIsContractBalanceEnough(_value)
+       // requireIsExternallyOwnedAccount()
+       returns(uint256)
+       //requireIsContractBalanceEnough(_value)
     {
         uint256 amount = passengers[_account].indemnity;
         uint256 balance = flightSuretyBalance.sub(amount);
         flightSuretyBalance = balance;
         passengers[_account].indemnity = 0;
         passengers[_account].isIndemnified = true;
-        _account.transfer(amount);
-        return amount;
+        //emit Transferred(amount);
+         //_account.transfer(amount);
+         return amount;
     }
 
    /**
@@ -300,8 +303,8 @@ contract FlightSuretyData {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
 
-    function getInsuranceList(string _flightCode) external view returns(address[] memory , uint256[] memory){
-        return (insurances[_flightCode].insuredPassengers, insurances[_flightCode].insuraceValue);
+    function getInsuranceList(string _flightCode) external view returns(address[] memory){
+        return (insurances[_flightCode].insuredPassengers);
     }
 
     /**

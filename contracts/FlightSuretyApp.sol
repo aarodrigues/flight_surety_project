@@ -209,17 +209,22 @@ contract FlightSuretyApp {
     function calculeIndemnity(uint256 _value) internal pure returns(uint256)
     {
         uint amount = _value;
-        amount = amount.mul(3).div(2);
-        uint indemnity = _value.add(amount);
+        uint indemnity = amount.mul(3).div(2);
         return indemnity;
+    }
+
+    function testCalc(uint256 _value) external pure returns(uint256)
+    {
+        return calculeIndemnity(_value);
     }
 
     function setIndemnity(string memory _flightCode) internal view
     {
-        (address[] memory passengers, uint256[] memory value) = flightSuretyData.getInsuranceList(_flightCode);
+        (address[] memory passengers) = flightSuretyData.getInsuranceList(_flightCode);
         for(uint i = 0; i < passengers.length; i++){
-            uint256 indemnity = calculeIndemnity(value[i]);
-            flightSuretyData.creditInsurees(passengers[i],indemnity);
+            uint256 indemnity = calculeIndemnity(flightSuretyData.getPassengerInsuracedValue(_flightCode,passengers[i]));
+            // uint256 indemnity = flightSuretyData.getPassengerInsuracedValue(passengers[i]);
+            flightSuretyData.creditInsurees(_flightCode, passengers[i],indemnity);
         }
     }
     
@@ -250,7 +255,7 @@ contract FlightSuretyApp {
         return flightSuretyData.getContractBalance();
     }
 
-    function getInsuranceList(string _flightCode) external view returns (address[], uint[]){
+    function getInsuranceList(string _flightCode) external view returns (address[]){
         return flightSuretyData.getInsuranceList(_flightCode);
     }
 
@@ -419,10 +424,10 @@ contract FlightSuretyData {
     function registerAirline(string _name, address _address) external returns(bool);
     function buy(address _passengerAddr, string _flightCode, uint256 _payment) external payable;
     function getContractBalance() external view returns(uint256);
-    function creditInsurees(address _passenger, uint256 _value) external pure;
+    function getPassengerInsuracedValue(string _flightCode,address _passengerAddr) external view  returns (uint256);
+    function creditInsurees(string _flightCode, address _passenger, uint256 _value) external pure;
     function pay(address _account) external payable returns(uint256);
-    function pay()external pure;
     function fund(address _airlineAddress, uint256  _value) public payable;
     function getFlightKey(address airline,string memory flight,uint256 timestamp) internal pure returns(bytes32);
-    function getInsuranceList(string _flightCode) external view returns(address[], uint256[]);
+    function getInsuranceList(string _flightCode) external view returns(address[]);
 }

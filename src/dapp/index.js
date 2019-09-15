@@ -66,7 +66,7 @@ import './flightsurety.css';
             let id  = flight.options[flight.selectedIndex].value;
             let code  = flight.options[flight.selectedIndex].text;
             let addr = getAirlinesAddress(id)
-            console.log(addr+" jsijsijsijs "+ code);
+            console.log("Flight "+code+" from airline "+addr+" registered ");
             contract.registerFlight(addr,code, (error, result) => {
                     console.log(result);
             });
@@ -96,7 +96,7 @@ import './flightsurety.css';
             let code  = flight.options[flight.selectedIndex].text;
             let time = Number(Math.floor(Date.now() / 1000));
             let address = getAirlinesAddress(id)
-            console.log(" jsijsijsijs "+ code);
+            console.log(" Flight "+code+" updated");
             contract.fetchFlightStatus({address: address, flight: code, time: time}, (error, result) => {
                 display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: result.flight + ' was succesfully submitted.'} ]);
             });
@@ -117,9 +117,17 @@ import './flightsurety.css';
         DOM.elid('bt-passenger-indemnity').addEventListener('click', () => {
             console.log("get passenger balance")
             let balance = DOM.elid('passenger-balance-value');
-            balance.value = 'teste 2';
             contract.pay((error, result) => {
-                console.log(result);
+                console.log("result: "+result+" erro: "+error);
+                balance.value = result;
+            });
+        }) 
+
+        DOM.elid('bt-test').addEventListener('click', () => {
+            console.log("test ...")
+            let balance = DOM.elid('input-test');
+            contract.test(balance.value,(error, result) => {
+                console.log("result: "+result+" erro: "+error);
                 balance.value = result;
             });
         }) 
