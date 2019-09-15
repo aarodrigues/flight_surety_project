@@ -89,13 +89,15 @@ export default class Contract {
 
     pay(callback){
         let self = this;
-        self.flightSuretyApp.methods.pay().call({ from: self.owner},callback);
+        self.flightSuretyApp.methods.pay()
+        .send({ from: self.owner, gas: 1000000}, callback);
     }
 
-    test(value, callback){
-        let self = this;
-        console.log("contract part "+value)
-        self.flightSuretyApp.methods.testCalc(value).call({ from: self.owner},callback);
-    }
+    // test(value, callback){
+    //     let self = this;
+    //     console.log("contract part "+value)
+    //     self.flightSuretyApp.methods.testCalc(value)
+    //     .send({ from: self.owner, gas: 1000000}, callback);
+    // }
 
 }

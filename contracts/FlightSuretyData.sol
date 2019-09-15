@@ -14,7 +14,7 @@ contract FlightSuretyData {
     uint constant OPERATIONAL_STATUS_CONSENSUS = 0;                                                // Multi-party concensus number
     uint public constant APROVE_AIRLINE_CONSENSUS = 4;
     uint256 public constant FUND_VALUE = 10 ether;
-    uint256 flightSuretyBalance;
+    uint256 private flightSuretyBalance;
     struct Airline {
         string airlineName;
         bool isRegistered;
@@ -260,7 +260,7 @@ contract FlightSuretyData {
     */
     function creditInsurees(string _flightCode, address _passenger, uint256 _indemnity) external requireIsOperational()
     {
-        uint256 amount = 0; //passengers[_passenger].indemnity;
+        uint256 amount = passengers[_passenger].indemnity;
         passengers[_passenger].indemnity = amount.add(_indemnity);
         if(passengers[_passenger].isIndemnified == true){
             insurances[_flightCode].insuraceValue[_passenger] = 0;
@@ -274,18 +274,20 @@ contract FlightSuretyData {
     */
     function pay(address _account) external payable requireIsOperational()
        // requireIsExternallyOwnedAccount()
-       returns(uint256)
        //requireIsContractBalanceEnough(_value)
     {
-        uint256 amount = passengers[_account].indemnity;
+        uint256 amount = 5000; //passengers[_account].indemnity;
         uint256 balance = flightSuretyBalance.sub(amount);
         flightSuretyBalance = balance;
         passengers[_account].indemnity = 0;
         passengers[_account].isIndemnified = true;
         //emit Transferred(amount);
          //_account.transfer(amount);
-         return amount;
     }
+
+    // function haha() external payable {
+    //     flightSuretyBalance = 55;
+    // }
 
    /**
     * @dev Initial funding for the insurance. Unless there are too many delayed flights

@@ -70,7 +70,7 @@ select {
     width: 110px;
 }
 
-#ether{
+.fake-label{
     vertical-align:middle;
     margin-right: 35px;
     margin-top: 8px;
@@ -82,4 +82,9 @@ select {
 
 #passenger-balance-value{
     margin-left: 28px;
+}
+
+#payout{
+    margin-left: 50px;
+    margin-right: 212px;
 }

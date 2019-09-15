@@ -213,10 +213,11 @@ contract FlightSuretyApp {
         return indemnity;
     }
 
-    function testCalc(uint256 _value) external pure returns(uint256)
-    {
-        return calculeIndemnity(_value);
-    }
+    // function testCalc(uint256 _value) external returns(uint256)
+    // {
+    //     flightSuretyData.haha();
+    //     return _value;
+    // }
 
     function setIndemnity(string memory _flightCode) internal view
     {
@@ -247,8 +248,8 @@ contract FlightSuretyApp {
         flightSuretyData.buy(msg.sender, _flightCode, msg.value);
     }
 
-    function pay() external payable returns(uint256){
-        return flightSuretyData.pay(msg.sender);
+    function pay() external payable {
+        flightSuretyData.pay(msg.sender);
     }
 
     function getContractBalance() external view requireIsOperational() returns(uint256){
@@ -426,8 +427,9 @@ contract FlightSuretyData {
     function getContractBalance() external view returns(uint256);
     function getPassengerInsuracedValue(string _flightCode,address _passengerAddr) external view  returns (uint256);
     function creditInsurees(string _flightCode, address _passenger, uint256 _value) external pure;
-    function pay(address _account) external payable returns(uint256);
+    function pay(address _account) external payable;
     function fund(address _airlineAddress, uint256  _value) public payable;
     function getFlightKey(address airline,string memory flight,uint256 timestamp) internal pure returns(bytes32);
     function getInsuranceList(string _flightCode) external view returns(address[]);
+    // function haha() external payable;
 }

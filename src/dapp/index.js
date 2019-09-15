@@ -83,7 +83,8 @@ import './flightsurety.css';
                 let code  = flight.options[flight.selectedIndex].text;
                 console.log(" Flight code: "+code+" Insurance value: "+insuranceValue)
                 contract.buyInsurance(code,insuranceValue,(error, result) => {
-                    console.log(result);
+                    if (error) console.log(error)
+                    else console.log(result);
                 });
             }
         }) 
@@ -106,31 +107,34 @@ import './flightsurety.css';
         DOM.elid('bt-contract-balance').addEventListener('click', () => {
             console.log("get contract balance")
             let balance = DOM.elid('contract-balance-value');
-            balance.value = 'teste';
             contract.getContractBalance((error, result) => {
-                console.log(result);
-                balance.value = result;
+                if (error) console.log(error)
+                else {
+                    console.log(result);
+                    balance.value = result;
+                }
             });
             
         }) 
 
         DOM.elid('bt-passenger-indemnity').addEventListener('click', () => {
             console.log("get passenger balance")
-            let balance = DOM.elid('passenger-balance-value');
+            let balance = DOM.elid('payout');
             contract.pay((error, result) => {
                 console.log("result: "+result+" erro: "+error);
-                balance.value = result;
+                //if(result !== 'undefied')
+                    balance.innerHTML = "OK";
             });
         }) 
 
-        DOM.elid('bt-test').addEventListener('click', () => {
-            console.log("test ...")
-            let balance = DOM.elid('input-test');
-            contract.test(balance.value,(error, result) => {
-                console.log("result: "+result+" erro: "+error);
-                balance.value = result;
-            });
-        }) 
+        // DOM.elid('bt-test').addEventListener('click', () => {
+        //     console.log("test ...")
+        //     let balance = DOM.elid('input-test');
+        //     contract.test(balance.value,(error, result) => {
+        //         console.log("result: "+result+" erro: "+error);
+        //         balance.value = result;
+        //     });
+        // }) 
     
     });
     
