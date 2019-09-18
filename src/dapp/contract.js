@@ -42,9 +42,8 @@ export default class Contract {
 
     registerAirline(address, name, callback){
         let self = this;
-        self.flightSuretyApp.methods.registerAirline(address, name).send({ from:self.airlines[0]},  (resolve, reject) => {
-                callback(resolve, reject);
-            });
+        self.flightSuretyApp.methods.registerAirline(address, name)
+        .send({ from:self.airlines[0], gas: 1000000}, callback);
     }
 
     setAirlineFund(airline,value, callback){
@@ -93,11 +92,12 @@ export default class Contract {
         .send({ from: self.owner, gas: 1000000}, callback);
     }
 
-    // test(value, callback){
-    //     let self = this;
-    //     console.log("contract part "+value)
-    //     self.flightSuretyApp.methods.testCalc(value)
-    //     .send({ from: self.owner, gas: 1000000}, callback);
-    // }
+    test(value, callback){
+        let self = this;
+        console.log("contract part "+value)
+        self.flightSuretyApp.methods.testCalc()
+        .call({ from: self.owner}, callback)
+        //.send({ from: self.owner, gas: 1000000}, callback);
+    }
 
 }

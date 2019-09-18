@@ -127,14 +127,14 @@ import './flightsurety.css';
             });
         }) 
 
-        // DOM.elid('bt-test').addEventListener('click', () => {
-        //     console.log("test ...")
-        //     let balance = DOM.elid('input-test');
-        //     contract.test(balance.value,(error, result) => {
-        //         console.log("result: "+result+" erro: "+error);
-        //         balance.value = result;
-        //     });
-        // }) 
+        DOM.elid('bt-test').addEventListener('click', () => {
+            console.log("test ...")
+            let balance = DOM.elid('input-test');
+            contract.test(balance.value,(error, result) => {
+                console.log("result: "+result+" erro: "+error);
+                balance.value = result;
+            });
+        }) 
     
     });
     

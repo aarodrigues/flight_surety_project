@@ -54,6 +54,7 @@ contract FlightSuretyApp {
     }
     mapping(bytes32 => Flight) private flights;
 
+    uint countCalls = 0;
  
     /********************************************************************************************/
     /*                                       FUNCTION   MODIFIERS                                 */
@@ -213,11 +214,10 @@ contract FlightSuretyApp {
         return indemnity;
     }
 
-    // function testCalc(uint256 _value) external returns(uint256)
-    // {
-    //     flightSuretyData.haha();
-    //     return _value;
-    // }
+    function testCalc() external view returns(uint256)
+    {
+        return countCalls;//flightSuretyData.haha();
+    }
 
     function setIndemnity(string memory _flightCode) internal view
     {
@@ -240,6 +240,7 @@ contract FlightSuretyApp {
             flights[key].statusCode = _statusCode;
             setIndemnity(_flightCode);
         }
+        countCalls = countCalls.add(1);
     }
 
     function buyInsurance(string _flightCode) external payable requireIsOperational()
@@ -356,6 +357,7 @@ contract FlightSuretyApp {
 
         bytes32 key = keccak256(abi.encodePacked(index, airline, flight, timestamp));
         require(oracleResponses[key].isOpen, "Flight or timestamp do not match oracle request");
+        // require(hasOracleAlreadyResponded(key) == false, 'This oracle has already submitted response');
 
         oracleResponses[key].responses[statusCode].push(msg.sender);
 
@@ -411,6 +413,19 @@ contract FlightSuretyApp {
         return random;
     }
 
+    // function hasOracleAlreadyResponded(bytes32 key) private view returns(bool) {
+    //     bool hasResponded = false;
+    //     for(uint i = 0; i < oracleResponses[key].responses[STATUS_CODE_LATE_AIRLINE].length; i++){
+    //         if(oracleResponses[key].responses[STATUS_CODE_LATE_AIRLINE][i] == msg.sender){
+    //             hasResponded = true;
+    //             break;
+    //         }
+    //     }
+    //     return hasResponded;
+    // }
+
+
+
 // endregion
 
 }
@@ -431,5 +446,5 @@ contract FlightSuretyData {
     function fund(address _airlineAddress, uint256  _value) public payable;
     function getFlightKey(address airline,string memory flight,uint256 timestamp) internal pure returns(bytes32);
     function getInsuranceList(string _flightCode) external view returns(address[]);
-    // function haha() external payable;
+    // function haha() external returns(uint256);
 }
