@@ -242,7 +242,6 @@ contract FlightSuretyData {
         insurances[_flightCode].insuredPassengers.push(_passengerAddr);
         uint256 paid = insurances[_flightCode].insuraceValue[_passengerAddr];
         insurances[_flightCode].insuraceValue[_passengerAddr] = paid.add(_payment);
-        //passengers[_passengerAddr].insuraceValue = _payment;
         passengers[_passengerAddr].isIndemnified = false;
         flightSuretyBalance = flightSuretyBalance.add(_payment);
     }
@@ -273,19 +272,19 @@ contract FlightSuretyData {
      *
     */
     function pay(address _account) external payable requireIsOperational()
-       // requireIsExternallyOwnedAccount()
-       //requireIsContractBalanceEnough(_value)
+        requireIsExternallyOwnedAccount()
+       requireIsContractBalanceEnough(_value)
     {
-        uint256 amount = 5000; //passengers[_account].indemnity;
+        uint256 amount = passengers[_account].indemnity;
         uint256 balance = flightSuretyBalance.sub(amount);
         flightSuretyBalance = balance;
         passengers[_account].indemnity = 0;
         passengers[_account].isIndemnified = true;
         //emit Transferred(amount);
-         //_account.transfer(amount);
+        _account.transfer(amount);
     }
 
-    // function haha() external payable {
+    // function test() external payable {
     //     flightSuretyBalance = 55;
     // }
 
